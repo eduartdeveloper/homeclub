@@ -3,16 +3,45 @@ import { View, StyleSheet, ImageBackground, Image } from 'react-native';
 import { Text, TextInput, Button, useTheme } from 'react-native-paper';
 import { useRouter } from 'expo-router';
 import BackButton from '@/components/BackButton';
+import AlertBox from '@/components/AlertBox';
 
 export default function ForgotPasswordScreen() {
     const { colors } = useTheme();
     const router = useRouter();
     const [email, setEmail] = useState('');
+    const [dialogVisible, setDialogVisible] = useState(false);
+    const [dialogMessage, setDialogMessage] = useState('');
 
-    const handleSubmit = () => {
-        console.log('Enviar enlace a:', email);
-        // Aquí podrías hacer la petición a tu API
-        router.push('/forgot-password/change'); // Ir a cambiar contraseña
+    const showAlert = (message: string) => {
+        setDialogMessage(message);
+        setDialogVisible(true);
+    };
+
+    const hideDialog = () => {
+        setDialogVisible(false);
+    };
+
+    const handleSubmit = async () => {
+        if (!email.trim()) {
+            showAlert('Por favor, ingresa tu correo electrónico.');
+            return;
+        }
+
+        try {
+            const response = await fetch('https://run.mocky.io/v3/1f355184-b062-41d5-81c1-817b36e644cf');
+            const data = await response.json();
+
+            const userExists = data.users.some((user: any) => user.email === email.trim());
+
+            if (userExists) {
+                router.push('/forgot-password/change');
+            } else {
+                showAlert('El correo ingresado no está registrado.');
+            }
+        } catch (error) {
+            console.error(error);
+            showAlert('Hubo un error al intentar recuperar la cuenta. Intenta más tarde.');
+        }
     };
 
     return (
@@ -49,6 +78,8 @@ export default function ForgotPasswordScreen() {
             <Button mode="contained" onPress={handleSubmit} style={[styles.button, { backgroundColor: colors.buttonPrimary }]}>
                 Enviar instrucciones
             </Button>
+
+            <AlertBox visible={dialogVisible} onDismiss={hideDialog} message={dialogMessage} />
         </ImageBackground>
     );
 }
@@ -65,7 +96,7 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         color: '#000',
         fontSize: 23,
-        fontWeight: 800
+        fontWeight: '800',
     },
     subtitle: {
         marginBottom: 24,
@@ -83,7 +114,7 @@ const styles = StyleSheet.create({
         marginBottom: 32,
     },
     logoContainer: {
-        width: '70%'
+        width: '70%',
     },
     logo: {
         width: '100%',

@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { View, StyleSheet, Image, ImageBackground } from 'react-native';
-import { Text, TextInput, Button, useTheme, TouchableRipple, IconButton } from 'react-native-paper';
+import { Text, TextInput, Button, useTheme, TouchableRipple, Dialog, Portal, Icon } from 'react-native-paper';
 import { useRouter } from 'expo-router';
-
+import { decode as atob } from 'base-64';
+import AlertBox from '@/components/AlertBox';
 
 export default function LoginScreen() {
     const { colors } = useTheme();
@@ -11,11 +12,44 @@ export default function LoginScreen() {
     const [activeTab, setActiveTab] = useState<'guest' | 'owner'>('guest');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [showPassword, setShowPassword] = useState(false)
+    const [showPassword, setShowPassword] = useState(false);
 
-    const handleLogin = () => {
-        console.log('Email:', email, 'Password:', password);
-        router.push('/properties');
+    const [dialogVisible, setDialogVisible] = useState(false);
+    const [dialogMessage, setDialogMessage] = useState('');
+
+    const showAlert = (message: string) => {
+        setDialogMessage(message);
+        setDialogVisible(true);
+    };
+
+    const hideDialog = () => {
+        setDialogVisible(false);
+    };
+
+    const handleLogin = async () => {
+        if (!email || !password) {
+            showAlert('Por favor ingresa tu correo y contraseña.');
+            return;
+        }
+
+        try {
+            const response = await fetch('https://run.mocky.io/v3/1f355184-b062-41d5-81c1-817b36e644cf');
+            const data = await response.json();
+        
+            const foundUser = data.users.find(user => {
+                const decodedPassword = atob(user.password);
+                return user.email === email && decodedPassword === password;
+            });
+        
+            if (foundUser) {
+                router.push('/properties');
+            } else {
+                showAlert('Correo o contraseña incorrectos.');
+            }
+        } catch (error) {
+            showAlert('Error al intentar iniciar sesión. Intenta más tarde.');
+            console.error(error);
+        }
     };
 
     const handlePasswordReset = () => {
@@ -33,42 +67,26 @@ export default function LoginScreen() {
                     <Image source={require('../assets/images/logo.png')} style={styles.logo} resizeMode='contain' />
                 </Text>
             </View>
+
             {/* Tabs */}
             <View style={styles.tabContainer}>
                 <TouchableRipple
                     onPress={() => setActiveTab('guest')}
-                    style={[
-                        styles.tab,
-                        activeTab === 'guest' && { backgroundColor: colors.primaryContainer },
-                    ]}
+                    style={[styles.tab, activeTab === 'guest' && { backgroundColor: colors.primaryContainer }]}
                 >
-                    <Text
-                        style={[
-                            styles.tabText,
-                            { color: activeTab === 'guest' ? 'white' : 'black' }
-                        ]}
-                    >Invitado</Text>
+                    <Text style={[styles.tabText, { color: activeTab === 'guest' ? 'white' : 'black' }]}>Invitado</Text>
                 </TouchableRipple>
                 <TouchableRipple
                     onPress={() => setActiveTab('owner')}
-                    style={[
-                        styles.tab,
-                        activeTab === 'owner' && { backgroundColor: colors.primaryContainer },
-                    ]}
+                    style={[styles.tab, activeTab === 'owner' && { backgroundColor: colors.primaryContainer }]}
                 >
-                    <Text
-                        style={[
-                            styles.tabText,
-                            { color: activeTab === 'owner ' ? 'white' : 'black' }
-                        ]}
-                    >Propietario</Text>
+                    <Text style={[styles.tabText, { color: activeTab === 'owner' ? 'white' : 'black' }]}>Propietario</Text>
                 </TouchableRipple>
             </View>
 
             {/* Contenido del tab */}
             {activeTab === 'guest' ? (
                 <>
-
                     <TextInput
                         label="Correo electrónico"
                         mode="outlined"
@@ -92,7 +110,6 @@ export default function LoginScreen() {
                             />
                         }
                     />
-
                     <Button mode="contained" onPress={handleLogin} style={[styles.button, { backgroundColor: colors.buttonPrimary }]}>
                         Iniciar sesión
                     </Button>
@@ -111,6 +128,12 @@ export default function LoginScreen() {
                     </Text>
                 </View>
             )}
+
+            <AlertBox 
+                visible={dialogVisible}
+                onDismiss={hideDialog}
+                message={dialogMessage}
+            />
         </ImageBackground>
     );
 }
@@ -161,5 +184,9 @@ const styles = StyleSheet.create({
     logo: {
         width: '100%',
         height: 100,
+    },
+    dialog: {
+        marginHorizontal: 40,
+        borderRadius: 12,
     }
 });

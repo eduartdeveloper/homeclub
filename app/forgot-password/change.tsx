@@ -3,6 +3,7 @@ import { View, StyleSheet, ImageBackground, Image } from 'react-native';
 import { Text, TextInput, Button, Portal, Dialog, Paragraph, useTheme } from 'react-native-paper';
 import { useRouter } from 'expo-router';
 import BackButton from '@/components/BackButton';
+import AlertBox from '@/components/AlertBox';
 
 export default function ResetPasswordScreen() {
     const router = useRouter();
@@ -10,20 +11,31 @@ export default function ResetPasswordScreen() {
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
-    const [visible, setVisible] = useState(false);
+    const [dialogVisible, setDialogVisible] = useState(false);
+    const [dialogMessage, setDialogMessage] = useState('');
+    const [isSuccess, setIsSuccess] = useState(false);
+
+
+    const showAlert = (message: string) => {
+        setDialogMessage(message);
+        setDialogVisible(true);
+    }
+
+    const hideDialog = () => {
+        setDialogVisible(false);
+    };
 
     const handleSave = () => {
         if (password !== confirmPassword) {
-            alert('Las contraseñas no coinciden');
+            showAlert('Las contraseñas no coinciden');
             return;
+        }else{
+            setIsSuccess(true)
+            showAlert('Contraseña actualizada');
+            router.replace('/login');
         }
-        setVisible(true);
     };
 
-    const handleDialogOk = () => {
-        setVisible(false);
-        router.replace('/login');
-    };
 
     return (
         <ImageBackground
@@ -38,6 +50,9 @@ export default function ResetPasswordScreen() {
                 </Text>
             </View>
             <Text variant="headlineMedium" style={styles.title}>Cambiar contraseña</Text>
+            <Text style={styles.subtitle}>
+                Ingresa tu nueva contraseña.
+            </Text>
 
             <TextInput
                 label="Nueva contraseña"
@@ -87,18 +102,15 @@ export default function ResetPasswordScreen() {
             </Button>
 
 
-            {/* Diálogo hermoso nativo de Paper */}
-            <Portal>
-                <Dialog visible={visible} onDismiss={handleDialogOk}>
-                    <Dialog.Title>¡Contraseña actualizada!</Dialog.Title>
-                    <Dialog.Content>
-                        <Paragraph>Tu contraseña se ha actualizado exitosamente.</Paragraph>
-                    </Dialog.Content>
-                    <Dialog.Actions>
-                        <Button onPress={handleDialogOk}>Aceptar</Button>
-                    </Dialog.Actions>
-                </Dialog>
-            </Portal>
+            <AlertBox 
+                visible={dialogVisible} 
+                onDismiss={hideDialog} 
+                message={dialogMessage} 
+                {...(isSuccess && {
+                    icon: 'check-circle',
+                    iconColor: '#046974',
+                })}
+            />
         </ImageBackground>
     );
 }
@@ -115,6 +127,11 @@ const styles = StyleSheet.create({
         marginBottom: 32,
         fontSize: 23,
         fontWeight: 800
+    },
+    subtitle: {
+        marginBottom: 24,
+        textAlign: 'center',
+        color: '#000',
     },
     input: {
         marginBottom: 16,
