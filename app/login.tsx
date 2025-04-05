@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, Image, ImageBackground } from 'react-native';
 import { Text, TextInput, Button, useTheme, TouchableRipple, IconButton } from 'react-native-paper';
 import { useRouter } from 'expo-router';
+
 
 export default function LoginScreen() {
     const { colors } = useTheme();
@@ -22,7 +23,16 @@ export default function LoginScreen() {
     };
 
     return (
-        <View style={styles.container}>
+        <ImageBackground
+            source={require('../assets/images/back-splash.png')}
+            style={styles.container}
+            resizeMode="cover"
+        >
+            <View style={styles.header}>
+                <Text variant="headlineLarge" style={styles.logoContainer}>
+                    <Image source={require('../assets/images/logo.png')} style={styles.logo} resizeMode='contain' />
+                </Text>
+            </View>
             {/* Tabs */}
             <View style={styles.tabContainer}>
                 <TouchableRipple
@@ -32,7 +42,12 @@ export default function LoginScreen() {
                         activeTab === 'guest' && { backgroundColor: colors.primaryContainer },
                     ]}
                 >
-                    <Text style={styles.tabText}>Invitado</Text>
+                    <Text
+                        style={[
+                            styles.tabText,
+                            { color: activeTab === 'guest' ? 'white' : 'black' }
+                        ]}
+                    >Invitado</Text>
                 </TouchableRipple>
                 <TouchableRipple
                     onPress={() => setActiveTab('owner')}
@@ -41,18 +56,18 @@ export default function LoginScreen() {
                         activeTab === 'owner' && { backgroundColor: colors.primaryContainer },
                     ]}
                 >
-                    <Text style={styles.tabText}>Propietario</Text>
+                    <Text
+                        style={[
+                            styles.tabText,
+                            { color: activeTab === 'owner ' ? 'white' : 'black' }
+                        ]}
+                    >Propietario</Text>
                 </TouchableRipple>
             </View>
 
             {/* Contenido del tab */}
             {activeTab === 'guest' ? (
                 <>
-                    <View style={styles.header}>
-                        <Text variant="headlineLarge" style={{ color: colors.primary }}>
-                            Logo
-                        </Text>
-                    </View>
 
                     <TextInput
                         label="Correo electrónico"
@@ -71,18 +86,18 @@ export default function LoginScreen() {
                         secureTextEntry={!showPassword}
                         style={styles.input}
                         right={
-                            <TextInput.Icon 
+                            <TextInput.Icon
                                 icon={showPassword ? 'eye-off' : 'eye'}
                                 onPress={() => setShowPassword(!showPassword)}
                             />
                         }
                     />
 
-                    <Button mode="contained" onPress={handleLogin} style={styles.button}>
+                    <Button mode="contained" onPress={handleLogin} style={[styles.button, { backgroundColor: colors.buttonPrimary }]}>
                         Iniciar sesión
                     </Button>
 
-                    <Button onPress={handlePasswordReset} compact>
+                    <Button onPress={handlePasswordReset} compact style={{ paddingTop: 20, borderRadius: 10 }} labelStyle={{ color: 'black' }}>
                         ¿Olvidaste tu contraseña? Restablecer
                     </Button>
                 </>
@@ -96,7 +111,7 @@ export default function LoginScreen() {
                     </Text>
                 </View>
             )}
-        </View>
+        </ImageBackground>
     );
 }
 
@@ -104,8 +119,7 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         padding: 24,
-        paddingTop: 60,
-        backgroundColor: '#fff',
+        paddingTop: 60
     },
     tabContainer: {
         flexDirection: 'row',
@@ -121,6 +135,8 @@ const styles = StyleSheet.create({
     },
     tabText: {
         fontWeight: '600',
+        fontFamily: 'EspecialFont',
+        fontSize: 18
     },
     header: {
         alignItems: 'center',
@@ -139,4 +155,11 @@ const styles = StyleSheet.create({
         marginTop: 40,
         paddingHorizontal: 16,
     },
+    logoContainer: {
+        width: '70%'
+    },
+    logo: {
+        width: '100%',
+        height: 100,
+    }
 });

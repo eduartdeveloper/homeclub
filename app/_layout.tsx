@@ -5,6 +5,9 @@ import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import 'react-native-reanimated';
 import { useRouter } from 'expo-router';
+// import { Text } from 'react-native-paper';
+import { Text } from 'react-native';
+
 
 import { PaperProvider } from 'react-native-paper';
 import { theme } from '../theme'
@@ -17,12 +20,15 @@ export default function RootLayout() {
 
 
   const [loaded] = useFonts({
-    SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
+    'PPNeueMontreal': require('../assets/fonts/PPNeueMontreal-Book.otf'),
+    'EspecialFont': require('../assets/fonts/EditorialNew-UltralightItalic.otf'),
   });
 
   useEffect(() => {
     if (loaded) {
       SplashScreen.hideAsync()
+      Text.defaultProps = Text.defaultProps || {};
+      Text.defaultProps.style = { fontFamily: 'PPNeueMontreal' };
       router.replace('/login')
     }
   }, [loaded]);
@@ -34,9 +40,16 @@ export default function RootLayout() {
 
   return (
     <PaperProvider theme={theme} >
-      <Stack>
+      <Stack
+        screenOptions={{
+          headerShown: false,
+        }}
+      >
       </Stack>
       <StatusBar style="auto" />
     </PaperProvider>
   );
 }
+
+
+

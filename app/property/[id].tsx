@@ -121,9 +121,6 @@ export default function PropertyDetail() {
                 <Button mode="outlined" onPress={() => console.log('Escribir')} style={styles.bottomButton}>
                     Escríbenos
                 </Button>
-                <Button mode="contained" onPress={() => console.log('Agendar')} style={styles.bottomButton}>
-                    Agenda una visita
-                </Button>
             </View>
         </View>
     );

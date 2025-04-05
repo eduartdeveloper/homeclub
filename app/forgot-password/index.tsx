@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, ImageBackground, Image } from 'react-native';
 import { Text, TextInput, Button, useTheme } from 'react-native-paper';
 import { useRouter } from 'expo-router';
+import BackButton from '@/components/BackButton';
 
 export default function ForgotPasswordScreen() {
     const { colors } = useTheme();
@@ -15,7 +16,18 @@ export default function ForgotPasswordScreen() {
     };
 
     return (
-        <View style={styles.container}>
+        <ImageBackground
+            source={require('../../assets/images/back-splash.png')}
+            style={styles.container}
+            resizeMode="cover"
+        >
+            <BackButton />
+            <View style={styles.header}>
+                <Text variant="headlineLarge" style={styles.logoContainer}>
+                    <Image source={require('../../assets/images/logo.png')} style={styles.logo} resizeMode='contain' />
+                </Text>
+            </View>
+
             <Text variant="headlineMedium" style={styles.title}>
                 Recuperar contraseña
             </Text>
@@ -34,10 +46,10 @@ export default function ForgotPasswordScreen() {
                 style={styles.input}
             />
 
-            <Button mode="contained" onPress={handleSubmit} style={styles.button}>
+            <Button mode="contained" onPress={handleSubmit} style={[styles.button, { backgroundColor: colors.buttonPrimary }]}>
                 Enviar instrucciones
             </Button>
-        </View>
+        </ImageBackground>
     );
 }
 
@@ -51,17 +63,30 @@ const styles = StyleSheet.create({
     title: {
         marginBottom: 12,
         textAlign: 'center',
-        color: '#333',
+        color: '#000',
+        fontSize: 23,
+        fontWeight: 800
     },
     subtitle: {
         marginBottom: 24,
         textAlign: 'center',
-        color: '#666',
+        color: '#000',
     },
     input: {
         marginBottom: 16,
     },
     button: {
         borderRadius: 10,
+    },
+    header: {
+        alignItems: 'center',
+        marginBottom: 32,
+    },
+    logoContainer: {
+        width: '70%'
+    },
+    logo: {
+        width: '100%',
+        height: 100,
     },
 });

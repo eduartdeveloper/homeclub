@@ -2,9 +2,11 @@ import { MD3LightTheme as DefaultTheme } from 'react-native-paper';
 
 export const theme = {
     ...DefaultTheme,
+    roundness: 10,
     colors: {
         ...DefaultTheme.colors,
-        primary: '#6200ee',
+        primary: '#046974',
+        primaryContainer: '#000000',
         secondary: '#03dac6',
         background: '#f6f6f6',
         surface: '#ffffff',
@@ -15,5 +17,24 @@ export const theme = {
         onBackground: '#000000',
         onSurface: '#000000',
         onError: '#ffffff',
+        buttonPrimary: '#000000'
     },
+    fonts: {
+        ...DefaultTheme.fonts,
+        bodyLarge: { fontFamily: 'PPNeueMontreal' },
+        bodyMedium: { fontFamily: 'PPNeueMontreal' },
+        bodySmall: { fontFamily: 'PPNeueMontreal' },
+        titleLarge: { fontFamily: 'PPNeueMontreal' },
+        titleMedium: { fontFamily: 'PPNeueMontreal' },
+        titleSmall: { fontFamily: 'PPNeueMontreal' },
+        labelLarge: { fontFamily: 'PPNeueMontreal' },
+        labelMedium: { fontFamily: 'PPNeueMontreal' },
+        labelSmall: { fontFamily: 'PPNeueMontreal' },
+        displayLarge: { fontFamily: 'PPNeueMontreal' },
+        displayMedium: { fontFamily: 'PPNeueMontreal' },
+        displaySmall: { fontFamily: 'PPNeueMontreal' },
+        headlineLarge: { fontFamily: 'PPNeueMontreal' },
+        headlineMedium: { fontFamily: 'PPNeueMontreal' },
+        headlineSmall: { fontFamily: 'PPNeueMontreal' },
+    }
 };
