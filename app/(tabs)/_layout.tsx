@@ -1,45 +1,62 @@
-import { Tabs } from 'expo-router';
-import React from 'react';
-import { Platform } from 'react-native';
+import React from "react"
 
-import { HapticTab } from '@/components/HapticTab';
-import { IconSymbol } from '@/components/ui/IconSymbol';
-import TabBarBackground from '@/components/ui/TabBarBackground';
-import { Colors } from '@/constants/Colors';
-import { useColorScheme } from '@/hooks/useColorScheme';
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs"
+import { withLayoutContext } from "expo-router"
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useTheme } from "react-native-paper"
+
+import PropertiesScreen from "./properties"
+import BookingsScreen from "./bookings"
+import SettingsScreen from "./settings"
+
+const Tab = createBottomTabNavigator()
+const Tabs = withLayoutContext(Tab.Navigator)
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
-
+  const { colors } = useTheme()
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
         headerShown: false,
-        tabBarButton: HapticTab,
-        tabBarBackground: TabBarBackground,
-        tabBarStyle: Platform.select({
-          ios: {
-            // Use a transparent background on iOS to show the blur effect
-            position: 'absolute',
-          },
-          default: {},
-        }),
-      }}>
+        tabBarActiveTintColor: colors.primary,
+        tabBarStyle: {
+          backgroundColor: '#fff',
+          paddingBottom: 6,
+          paddingTop: 4,
+          height: 64,
+        },
+        tabBarLabelStyle: {
+          fontSize: 12,
+        },
+      }}
+    >
       <Tabs.Screen
-        name="index"
+        name="properties"
         options={{
-          title: 'Home',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
+          tabBarLabel: 'Propiedades',
+          tabBarIcon: ({ color, size }) => (
+            <MaterialCommunityIcons name="home-city" color={color} size={size} />
+          ),
         }}
       />
       <Tabs.Screen
-        name="explore"
+        name="bookings"
         options={{
-          title: 'Explore',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
+          tabBarLabel: 'Reservas',
+          tabBarIcon: ({ color, size }) => (
+            <MaterialCommunityIcons name="calendar-check" color={color} size={size} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="settings"
+        options={{
+          tabBarLabel: 'Configuración',
+          tabBarIcon: ({ color, size }) => (
+            <MaterialCommunityIcons name="cog-outline" color={color} size={size} />
+          ),
         }}
       />
     </Tabs>
-  );
+  )
 }

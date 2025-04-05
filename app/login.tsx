@@ -14,6 +14,7 @@ export default function LoginScreen() {
 
     const handleLogin = () => {
         console.log('Email:', email, 'Password:', password);
+        router.push('/properties');
     };
 
     const handlePasswordReset = () => {
