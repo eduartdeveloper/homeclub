@@ -115,7 +115,7 @@ export default function PropertyDetail() {
 
                 {/* 🧊 Render 3D (opcional o estático) */}
                 <Card style={styles.card}>
-                    
+
                     <Card.Content>
                         <Text style={styles.renderTitle}>Visualiza tu futuro hogar en 3D</Text>
                         <Image
@@ -124,14 +124,35 @@ export default function PropertyDetail() {
                             resizeMode='contain'
                         />
                         <Text style={styles.renderText}>
-                        Vive la experiencia virtual como si ya estuvieras allí.
+                            Vive la experiencia virtual como si ya estuvieras allí.
                         </Text>
-                        <Button mode="contained" onPress={() => router.push('/property/render')} style={[styles.button, {width: '50%'}]}>
+                        <Button mode="contained" onPress={() => router.push('/property/render')} style={[styles.button, { width: '50%' }]}>
                             Ver render 3D
                         </Button>
                     </Card.Content>
                 </Card>
+
+                
+
             </ScrollView>
+            <View style={styles.fixedBottomContainer}>
+                    <Button
+                        mode="contained"
+                        onPress={() => alert('Reserva realizada')}
+                        style={[styles.fixedButton, styles.button]}
+                        labelStyle={{ color: '#fff' }}
+                    >
+                        Reservar
+                    </Button>
+                    <Button
+                        mode="outlined"
+                        onPress={() => router.push('/booking/chat')}
+                        style={[styles.fixedButton, styles.button]}
+                        labelStyle={{ color: '#fff' }}
+                    >
+                        Escríbenos
+                    </Button>
+                </View>
         </View>
     );
 }
@@ -180,7 +201,7 @@ const styles = StyleSheet.create({
         height: 200,
         borderRadius: 12,
     },
-    renderTitle:{
+    renderTitle: {
         fontSize: 20,
         fontWeight: 800
     },
@@ -203,5 +224,31 @@ const styles = StyleSheet.create({
         fontSize: 20,
         fontWeight: 800,
         marginTop: 25
+    },
+    fixedBottomContainer: {
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        backgroundColor: '#fff',
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        paddingHorizontal: 16,
+        paddingTop: 10,
+        paddingBottom: Platform.OS === 'ios' ? 30 : 16,
+        borderTopWidth: 1,
+        borderTopColor: '#eee',
+        zIndex: 999, 
+        elevation: 20, 
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: -3 },
+        shadowOpacity: 0.1,
+        shadowRadius: 5,
+    },
+    fixedButton: {
+        flex: 1,
+        marginHorizontal: 6,
+        borderRadius: 10,
     }
+    
 });
