@@ -1,13 +1,18 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, Image, ImageBackground } from 'react-native';
 import { Text, TextInput, Button, useTheme, TouchableRipple, Dialog, Portal, Icon } from 'react-native-paper';
 import { useRouter } from 'expo-router';
 import { decode as atob } from 'base-64';
 import AlertBox from '@/components/AlertBox';
+import { useDispatch, useSelector } from 'react-redux';
+import { login } from '@/store/slices/authSlice';
 
 export default function LoginScreen() {
     const { colors } = useTheme();
     const router = useRouter();
+    const dispatch = useDispatch();
+    const isLoggedIn = useSelector(state => state.auth.isLoggedIn)
+
 
     const [activeTab, setActiveTab] = useState<'guest' | 'owner'>('guest');
     const [email, setEmail] = useState('');
@@ -35,13 +40,15 @@ export default function LoginScreen() {
         try {
             const response = await fetch('https://run.mocky.io/v3/1f355184-b062-41d5-81c1-817b36e644cf');
             const data = await response.json();
-        
+
             const foundUser = data.users.find(user => {
                 const decodedPassword = atob(user.password);
                 return user.email === email && decodedPassword === password;
             });
-        
+
             if (foundUser) {
+
+                dispatch(login(foundUser));
                 router.push('/properties');
             } else {
                 showAlert('Correo o contraseña incorrectos.');
@@ -55,6 +62,16 @@ export default function LoginScreen() {
     const handlePasswordReset = () => {
         router.push('/forgot-password');
     };
+
+    useEffect(() => {
+        const timeout = setTimeout(() => {
+            if (isLoggedIn) {
+                router.replace('/properties');
+            }
+        }, 100); 
+
+        return () => clearTimeout(timeout);
+    }, [])
 
     return (
         <ImageBackground
@@ -129,7 +146,7 @@ export default function LoginScreen() {
                 </View>
             )}
 
-            <AlertBox 
+            <AlertBox
                 visible={dialogVisible}
                 onDismiss={hideDialog}
                 message={dialogMessage}

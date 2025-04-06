@@ -1,87 +1,107 @@
-import React from "react";
-import { View, Text, FlatList, Image, TextInput, TouchableOpacity, StyleSheet } from "react-native";
-import { Card } from "react-native-paper";
+import React, { useEffect, useState } from "react";
+import { View, Text, FlatList, Image, TextInput, TouchableOpacity, StyleSheet, ScrollView } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-
-const properties = [
-    {
-        id: "1",
-        title: "Home in Dickinson",
-        location: "1714 Mackey DR Dickinson, TX",
-        image: "https://images.pexels.com/photos/259588/pexels-photo-259588.jpeg",
-        rating: 3.8,
-        bedrooms: 4,
-        bathrooms: 2,
-        size: "1,903 ft",
-        price: "$615,000"
-    },
-    {
-        id: "2",
-        title: "Madrid",
-        location: "1714 Mackey DR Dickinson, TX",
-        image: "https://images.pexels.com/photos/12603563/pexels-photo-12603563.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
-        rating: 3.8,
-        bedrooms: 4,
-        bathrooms: 2,
-        size: "1,903 ft",
-        price: "$615,000"
-    },
-];
+import { useSelector } from "react-redux";
 
 export default function PropertiesScreen() {
-    const router = useRouter()
+    const router = useRouter();
+    const user = useSelector(state => state.auth.user);
+    const profileImage = user.username === "jose"
+        ? require('../../assets/images/men.png')
+        : require('../../assets/images/women.png');
+
+    const [allProperties, setAllProperties] = useState([]);
+    const [filteredProperties, setFilteredProperties] = useState([]);
+    const [cities, setCities] = useState([]);
+    const [selectedCity, setSelectedCity] = useState("Todas");
+    const [searchText, setSearchText] = useState("");
+
+
+    useEffect(() => {
+        fetch("https://run.mocky.io/v3/5fb17bbe-dcc5-4a75-ad0b-fe165714cc64")
+            .then(res => res.json())
+            .then(data => {
+                setAllProperties(data);
+                setFilteredProperties(data);
+                console.log(data)
+                // Extraer ciudades únicas
+                const uniqueCities = ["Todas", ...new Set(data.map(item => item.city))];
+                setCities(uniqueCities);
+            });
+    }, []);
+
+    const filterByCity = (city) => {
+        setSelectedCity(city);
+        const filtered = allProperties.filter(item => {
+            const matchCity = city === "Todas" || item.city === city;
+            const matchSearch = item.title.toLowerCase().includes(searchText.toLowerCase()) ||
+                item.location.toLowerCase().includes(searchText.toLowerCase());
+            return matchCity && matchSearch;
+        });
+        setFilteredProperties(filtered);
+    };
+
+    const handleSearch = (text) => {
+        setSearchText(text);
+        const filtered = allProperties.filter(item => {
+            const matchCity = selectedCity === "Todas" || item.city === selectedCity;
+            const matchSearch = item.title.toLowerCase().includes(text.toLowerCase()) ||
+                                item.location.toLowerCase().includes(text.toLowerCase());
+            return matchCity && matchSearch;
+        });
+        setFilteredProperties(filtered);
+    };
+
 
     return (
         <View style={styles.container}>
             {/* Header */}
             <View style={styles.header}>
-                <Text style={styles.username}>Darrell Steward</Text>
-                <Image
-                    source={{ uri: "https://randomuser.me/api/portraits/men/1.jpg" }}
-                    style={styles.profileImage}
-                />
+                <Text style={styles.username}>{user.name}</Text>
+                <Image source={profileImage} style={styles.profileImage} />
             </View>
 
             {/* Search Bar */}
             <View style={styles.searchBar}>
                 <MaterialCommunityIcons name="magnify" size={24} color="gray" />
-                <TextInput placeholder="Search..." style={styles.searchInput} />
-                <MaterialCommunityIcons name="filter-variant" size={24} color="gray" />
+                <TextInput placeholder="Buscar..." style={styles.searchInput} onChangeText={handleSearch}/>
             </View>
 
-            {/* Filters */}
-            <View style={styles.filters}>
-                <TouchableOpacity style={styles.activeFilter}>
-                    <Text style={styles.activeFilterText}>For Sale</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.filter}>
-                    <Text>For Rent</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.filter}>
-                    <Text>By Map</Text>
-                </TouchableOpacity>
-            </View>
+            {/* City Filters */}
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filters}>
+                {cities.map(city => (
+                    <TouchableOpacity
+                        key={city}
+                        style={city === selectedCity ? styles.activeFilter : styles.filter}
+                        onPress={() => filterByCity(city)}
+                    >
+                        <Text style={city === selectedCity ? styles.activeFilterText : null}>
+                            {city}
+                        </Text>
+                    </TouchableOpacity>
+                ))}
+            </ScrollView>
 
             {/* Property List */}
             <FlatList
-                data={properties}
-                keyExtractor={(item) => item.id}
+                data={filteredProperties}
+                keyExtractor={(item) => item.id.toString()}
                 renderItem={({ item }) => (
-                    <TouchableOpacity style={styles.card} onPress={() => router.push(`/property/2`)}>
+                    <TouchableOpacity style={styles.card} onPress={() => router.push(`/property/${item.id}`)}>
                         <Image source={{ uri: item.image }} style={styles.propertyImage} />
                         <View style={styles.backgoundfloatingButton}></View>
                         <View style={styles.backgoundfloatingButtonc1}></View>
                         <View style={styles.backgoundfloatingButtonc2}></View>
                         <View style={styles.floatingButton}>
-                            <MaterialCommunityIcons name="arrow-top-right" size={24} color="black" />
+                            <MaterialCommunityIcons name="arrow-top-right" size={24} color="white" />
                         </View>
                         <View style={styles.cardContent}>
                             <Text style={styles.price}>{item.price}</Text>
                             <Text style={styles.propertyTitle}>{item.title}</Text>
                             <Text style={styles.propertyLocation}>{item.location}</Text>
                             <View style={styles.propertyDetails}>
-                                <MaterialCommunityIcons name="bed" size={15} color="white" style={styles.detailIcon} />
+                                <MaterialCommunityIcons name="bed-outline" size={15} color="white" style={styles.detailIcon} />
                                 <Text style={styles.detailText}>{item.bedrooms}</Text>
                                 <MaterialCommunityIcons name="shower" size={15} color="white" style={styles.detailIcon} />
                                 <Text style={styles.detailText}>{item.bathrooms}</Text>
@@ -101,6 +121,7 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: "#F8F9FA",
         padding: 16,
+        paddingTop: 50
     },
     header: {
         flexDirection: "row",
@@ -131,12 +152,14 @@ const styles = StyleSheet.create({
     filters: {
         flexDirection: "row",
         marginTop: 16,
+        paddingBottom: 20,
     },
     activeFilter: {
-        backgroundColor: "#007bff",
+        backgroundColor: "#000000",
         padding: 10,
         borderRadius: 20,
         marginRight: 8,
+        height: 40
     },
     activeFilterText: {
         color: "white",
@@ -146,6 +169,7 @@ const styles = StyleSheet.create({
         padding: 10,
         borderRadius: 20,
         marginRight: 8,
+        height: 40
     },
     card: {
         marginTop: 20,
@@ -153,49 +177,25 @@ const styles = StyleSheet.create({
         overflow: "hidden",
         width: "100%",
         aspectRatio: 1,
-        position: "relative"
+        position: "relative",
+        elevation: 0,
     },
     propertyImage: {
         height: "100%",
         width: "100%",
         objectFit: "cover"
     },
-    backgoundfloatingButton: {
-        position: "absolute",
-        backgroundColor: 'white',
-        width: 100,
-        height: 100,
-        top: 0,
-        right: 0,
-        borderBottomLeftRadius: 50
-    },
-    backgoundfloatingButtonc1: {
-        backgroundColor: "transparent",
-        position: "absolute",
-        width: 50,
-        height: 50,
-        borderTopRightRadius: 25,
-        top: 0,
-        right: 100,
-        boxShadow: '7px -6px 0px 5px white'
-    },
-    backgoundfloatingButtonc2: {
-        backgroundColor: "transparent",
-        position: "absolute",
-        width: 50,
-        height: 50,
-        borderTopRightRadius: 25,
-        top: 100,
-        right: 0,
-        boxShadow: '7px -6px 0px 5px white'
-    },
     floatingButton: {
         position: "absolute",
         top: 10,
         right: 10,
-        backgroundColor: "yellow",
+        backgroundColor: "#000000",
         padding: 8,
         borderRadius: 50,
+        width: 75,
+        height: 75,
+        alignItems: 'center',
+        justifyContent: 'center'
     },
     cardContent: {
         padding: 16,
@@ -205,12 +205,12 @@ const styles = StyleSheet.create({
         bottom: 15,
         left: "5%",
         borderRadius: 25,
-
     },
     propertyTitle: {
         fontSize: 18,
         fontWeight: "bold",
-        color: "white"
+        color: "white",
+        width: '60%'
     },
     propertyLocation: {
         color: "white",
@@ -238,5 +238,34 @@ const styles = StyleSheet.create({
         position: "absolute",
         top: 16,
         right: 16
+    },
+    backgoundfloatingButton: {
+        position: "absolute",
+        backgroundColor: '#F8F9FA',
+        width: 100,
+        height: 100,
+        top: 0,
+        right: 0,
+        borderBottomLeftRadius: 50
+    },
+    backgoundfloatingButtonc1: {
+        backgroundColor: "transparent",
+        position: "absolute",
+        width: 50,
+        height: 50,
+        borderTopRightRadius: 25,
+        top: 0,
+        right: 100,
+        boxShadow: '7px -6px 0px 5px #F8F9FA'
+    },
+    backgoundfloatingButtonc2: {
+        backgroundColor: "transparent",
+        position: "absolute",
+        width: 50,
+        height: 50,
+        borderTopRightRadius: 25,
+        top: 100,
+        right: 0,
+        boxShadow: '7px -6px 0px 5px #F8F9FA'
     },
 });

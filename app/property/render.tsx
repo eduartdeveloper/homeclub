@@ -14,6 +14,7 @@ import { Renderer } from 'expo-three';
 import { Asset } from 'expo-asset';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
+import BackButton from '@/components/BackButton';
 
 export default function RenderProperty() {
     const [isLoading, setIsLoading] = useState(true);
@@ -142,6 +143,7 @@ export default function RenderProperty() {
                     <ActivityIndicator size="large" color="#6200ee" />
                 </View>
             )}
+            <BackButton />
             <GLView style={styles.glView} onContextCreate={onContextCreate} />
 
             {/* Controles de zoom */}

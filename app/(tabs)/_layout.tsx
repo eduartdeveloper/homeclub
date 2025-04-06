@@ -1,62 +1,71 @@
-import React from "react"
+import React, { useEffect, useState } from "react";
+import { BottomNavigation, Text, useTheme } from "react-native-paper";
+import { useRouter } from "expo-router";
+import { useSelector } from "react-redux";
 
-import { createBottomTabNavigator } from "@react-navigation/bottom-tabs"
-import { withLayoutContext } from "expo-router"
-import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { useTheme } from "react-native-paper"
-
-import PropertiesScreen from "./properties"
-import BookingsScreen from "./bookings"
-import SettingsScreen from "./settings"
-
-const Tab = createBottomTabNavigator()
-const Tabs = withLayoutContext(Tab.Navigator)
+// Tus pantallas
+import PropertiesScreen from "./properties";
+import BookingsScreen from "./bookings";
+import SettingsScreen from "./settings";
 
 export default function TabLayout() {
-  const { colors } = useTheme()
+  const router = useRouter();
+  const { colors } = useTheme();
+  const isLoggedIn = useSelector(state => state.auth.isLoggedIn);
+  const [index, setIndex] = useState(0);
+
+  useEffect(() => {
+    if (!isLoggedIn) {
+      router.push('/');
+    }
+  }, [isLoggedIn]);
+
+  const [routes] = useState([
+    {
+      key: 'properties',
+      title: 'Propiedades',
+      focusedIcon: 'home-city',
+      unfocusedIcon: 'home-city-outline',
+      color: '#e6e6fa' // o el color de fondo que quieres cuando está activo
+    },
+    {
+      key: 'bookings',
+      title: 'Reservas',
+      focusedIcon: 'calendar-check',
+      unfocusedIcon: 'calendar-check-outline',
+      color: '#ffe4e1'
+    },
+    {
+      key: 'settings',
+      title: 'Config',
+      focusedIcon: 'cog',
+      unfocusedIcon: 'cog-outline',
+      color: '#e0ffff'
+    },
+  ]);
+  
+
+  const renderScene = BottomNavigation.SceneMap({
+    properties: PropertiesScreen,
+    bookings: BookingsScreen,
+    settings: SettingsScreen,
+  });
+
   return (
-    <Tabs
-      screenOptions={{
-        headerShown: false,
-        tabBarActiveTintColor: colors.primary,
-        tabBarStyle: {
-          backgroundColor: '#fff',
-          paddingBottom: 6,
-          paddingTop: 4,
-          height: 64,
-        },
-        tabBarLabelStyle: {
-          fontSize: 12,
-        },
+    <BottomNavigation
+      navigationState={{ index, routes }}
+      onIndexChange={setIndex}
+      renderScene={renderScene}
+      shifting={false}
+      activeColor="black"
+      inactiveColor="#929292"
+      barStyle={{
+        backgroundColor: '#f2f2f2',
       }}
-    >
-      <Tabs.Screen
-        name="properties"
-        options={{
-          tabBarLabel: 'Propiedades',
-          tabBarIcon: ({ color, size }) => (
-            <MaterialCommunityIcons name="home-city" color={color} size={size} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="bookings"
-        options={{
-          tabBarLabel: 'Reservas',
-          tabBarIcon: ({ color, size }) => (
-            <MaterialCommunityIcons name="calendar-check" color={color} size={size} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="settings"
-        options={{
-          tabBarLabel: 'Configuración',
-          tabBarIcon: ({ color, size }) => (
-            <MaterialCommunityIcons name="cog-outline" color={color} size={size} />
-          ),
-        }}
-      />
-    </Tabs>
-  )
+      activeIndicatorStyle={{
+        backgroundColor: 'transparent',
+        borderWidth: 2
+      }}
+    />
+  );
 }

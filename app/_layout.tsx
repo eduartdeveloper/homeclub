@@ -5,19 +5,22 @@ import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import 'react-native-reanimated';
 import { useRouter } from 'expo-router';
-// import { Text } from 'react-native-paper';
 import { Text } from 'react-native';
 
+// Redux
+import { Provider } from 'react-redux';
+import { store, persistor } from '../store';
+import { PersistGate } from 'redux-persist/integration/react';
 
+// Paper
 import { PaperProvider } from 'react-native-paper';
-import { theme } from '../theme'
+import { theme } from '../theme';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
-  const router = useRouter()
-
+  const router = useRouter();
 
   const [loaded] = useFonts({
     'PPNeueMontreal': require('../assets/fonts/PPNeueMontreal-Book.otf'),
@@ -26,30 +29,27 @@ export default function RootLayout() {
 
   useEffect(() => {
     if (loaded) {
-      SplashScreen.hideAsync()
+      SplashScreen.hideAsync();
       Text.defaultProps = Text.defaultProps || {};
       Text.defaultProps.style = { fontFamily: 'PPNeueMontreal' };
-      router.replace('/login')
+      // router.replace('/login');
     }
   }, [loaded]);
 
-  if (!loaded) {
-    return null;
-  }
-
+  if (!loaded) return null;
 
   return (
-    <PaperProvider theme={theme} >
-      <Stack
-        screenOptions={{
-          headerShown: false,
-        }}
-      >
-      </Stack>
-      <StatusBar style="auto" />
-    </PaperProvider>
+    <Provider store={store}>
+      <PersistGate loading={null} persistor={persistor}>
+        <PaperProvider theme={theme}>
+          <Stack
+            screenOptions={{
+              headerShown: false,
+            }}
+          />
+          <StatusBar style="auto" />
+        </PaperProvider>
+      </PersistGate>
+    </Provider>
   );
 }
-
-
-

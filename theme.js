@@ -17,7 +17,7 @@ export const theme = {
         onBackground: '#000000',
         onSurface: '#000000',
         onError: '#ffffff',
-        buttonPrimary: '#000000'
+        buttonPrimary: '#000000',
     },
     fonts: {
         ...DefaultTheme.fonts,

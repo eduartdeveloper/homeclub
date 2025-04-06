@@ -1,17 +1,45 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { View, Image, StyleSheet, ScrollView, Linking, Platform } from 'react-native';
+import { useEffect, useState } from 'react';
+import { View, Image, StyleSheet, ScrollView, Linking, Platform, ActivityIndicator } from 'react-native';
 import { Text, Card, Button, useTheme } from 'react-native-paper';
-import { Ionicons } from '@expo/vector-icons';
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import MapView, { Marker } from 'react-native-maps';
+import BackButton from '@/components/BackButton';
 
 export default function PropertyDetail() {
     const { id } = useLocalSearchParams();
     const { colors } = useTheme();
-    const router = useRouter()
+    const router = useRouter();
+
+    const [property, setProperty] = useState(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetch('https://run.mocky.io/v3/5fb17bbe-dcc5-4a75-ad0b-fe165714cc64')
+            .then(res => res.json())
+            .then(data => {
+                const selected = data.find(item => item.id === id);
+                setProperty(selected);
+                setLoading(false);
+            })
+            .catch(err => {
+                console.error('Error loading property:', err);
+                setLoading(false);
+            });
+    }, [id]);
+
+    if (loading || !property) {
+        return (
+            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                <ActivityIndicator size="large" />
+                <Text>Cargando propiedad...</Text>
+            </View>
+        );
+    }
 
     const openGoogleMapsRoute = () => {
-        const destinationLat = 6.2442;   // reemplaza con latitud de la propiedad
-        const destinationLng = -75.5812; // reemplaza con longitud de la propiedad
+        const destinationLat = property.latitud;
+        const destinationLng = property.longitud;
 
         const url = Platform.select({
             ios: `http://maps.apple.com/?daddr=${destinationLat},${destinationLng}`,
@@ -22,160 +50,158 @@ export default function PropertyDetail() {
     };
 
     return (
-        <View style={{ flex: 1 }}>
+        <View style={{ flex: 1, backgroundColor: 'white' }}>
+            <BackButton />
             <ScrollView contentContainerStyle={{ paddingBottom: 140 }}>
                 {/* 📸 Banner */}
-                <Image
-                    source={{ uri: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c' }}
-                    style={styles.banner}
-                />
+                <View style={styles.bannerContainer}>
+                    <Image source={{ uri: property.image }} style={styles.banner} resizeMode='cover' />
+                </View>
 
                 {/* 🏠 Info */}
                 <View style={styles.infoContainer}>
-                    <Text variant="titleLarge" style={{ marginBottom: 8 }}>
-                        Apartamento en Medellín
+                    <Text variant="titleLarge" style={styles.title}>
+                        {property.title}
                     </Text>
 
                     <View style={styles.infoRow}>
-                        <Ionicons name="bed-outline" size={20} color={colors.primary} />
-                        <Text style={styles.infoText}>3 Habitaciones</Text>
+                        <MaterialCommunityIcons name="bed-outline" size={15} color="black" style={styles.detailIcon} />
+                        <Text style={styles.infoText}>{property.bedrooms} Habitaciones</Text>
                     </View>
                     <View style={styles.infoRow}>
-                        <Ionicons name="water-outline" size={20} color={colors.primary} />
-                        <Text style={styles.infoText}>2 Baños</Text>
+                        <MaterialCommunityIcons name="shower" size={15} color="black" style={styles.detailIcon} />
+                        <Text style={styles.infoText}>{property.bathrooms} Baños</Text>
                     </View>
                     <View style={styles.infoRow}>
-                        <Ionicons name="car-outline" size={20} color={colors.primary} />
-                        <Text style={styles.infoText}>1 Parqueadero</Text>
+                        <MaterialCommunityIcons name="ruler" size={15} color="black" style={styles.detailIcon} />
+                        <Text style={styles.infoText}>{property.size}</Text>
                     </View>
                     <View style={styles.infoRow}>
-                        <Ionicons name="location-outline" size={20} color={colors.primary} />
-                        <Text style={styles.infoText}>El Poblado, Medellín</Text>
+                        <MaterialCommunityIcons name="map-marker" size={15} color="black" style={styles.detailIcon} />
+                        <Text style={styles.infoText}>{property.location}</Text>
                     </View>
+
+                    <Text style={styles.titleDescription}>Descripción</Text>
+                    <Text>{property.descripcion}</Text>
                 </View>
 
-                {/* 📝 Descripción */}
-                <Card style={styles.card}>
-                    <Card.Title title="Descripción" />
-                    <Card.Content>
-                        <Text>
-                            Este hermoso apartamento está ubicado en una zona exclusiva con excelente iluminación y una vista espectacular. Ideal para quienes buscan comodidad y diseño moderno.
-                        </Text>
-                    </Card.Content>
-                </Card>
 
                 {/* 🗺️ Mapa */}
                 <Card style={styles.card}>
-                    <Card.Title title="Ubicación" />
+                    <Card.Title title="Descubre tu nuevo hogar" titleStyle={{ fontSize: 20, fontWeight: 'bold', color: '#333' }} />
                     <Card.Content>
                         <MapView
                             style={styles.realMap}
                             initialRegion={{
-                                latitude: 6.2442, // Medellín
-                                longitude: -75.5812,
+                                latitude: property.latitud,
+                                longitude: property.longitud,
                                 latitudeDelta: 0.01,
                                 longitudeDelta: 0.01,
                             }}
-                            provider="google" // ✅ Esto asegura que uses Google Maps
+                            provider="google"
                         >
                             <Marker
-                                coordinate={{ latitude: 6.2442, longitude: -75.5812 }}
-                                title="Apartamento"
-                                description="El Poblado, Medellín"
+                                coordinate={{ latitude: property.latitud, longitude: property.longitud }}
+                                title={property.title}
+                                description={property.location}
                             />
                         </MapView>
-                        <Button mode="outlined" onPress={openGoogleMapsRoute}>
-                            Ver ruta en Google Maps
+                        <Text style={{ paddingVertical: 15 }}>Planifica el camino hacia tu nuevo hogar con solo un clic</Text>
+                        <Button mode="contained" onPress={openGoogleMapsRoute} style={styles.button}>
+                            Calcular ruta en Google Maps
                         </Button>
                     </Card.Content>
                 </Card>
 
-                {/* 🧊 Render 3D */}
+                {/* 🧊 Render 3D (opcional o estático) */}
                 <Card style={styles.card}>
-                    <Card.Title title="¿Quieres ver la propiedad en 3D?" />
+                    
                     <Card.Content>
+                        <Text style={styles.renderTitle}>Visualiza tu futuro hogar en 3D</Text>
                         <Image
-                            source={{ uri: 'https://images.unsplash.com/photo-1570129477492-45c003edd2be' }}
+                            source={require('../../assets/images/render.png')}
                             style={styles.renderImage}
+                            resizeMode='contain'
                         />
-                        <Text style={{ marginTop: 12 }}>
-                            Explora la propiedad con una experiencia inmersiva en 3D y recorre cada rincón desde tu dispositivo.
+                        <Text style={styles.renderText}>
+                        Vive la experiencia virtual como si ya estuvieras allí.
                         </Text>
-                        <Button
-                            mode="contained"
-                            icon="cube-outline"
-                            style={{ marginTop: 12 }}
-                            onPress={() => router.push('/property/render') }
-                        >
+                        <Button mode="contained" onPress={() => router.push('/property/render')} style={[styles.button, {width: '50%'}]}>
                             Ver render 3D
                         </Button>
                     </Card.Content>
                 </Card>
             </ScrollView>
-
-            {/* 🧭 Botones fijos */}
-            <View style={styles.fixedButtons}>
-                <Button mode="outlined" onPress={() => console.log('Reservar')} style={styles.bottomButton}>
-                    Reservar
-                </Button>
-                <Button mode="outlined" onPress={() => console.log('Escribir')} style={styles.bottomButton}>
-                    Escríbenos
-                </Button>
-            </View>
         </View>
     );
 }
 
 const styles = StyleSheet.create({
+    bannerContainer: {
+        backgroundColor: 'white'
+    },
     banner: {
         width: '100%',
-        height: 220,
+        aspectRatio: 1,
+        borderBottomLeftRadius: 50,
+        borderBottomRightRadius: 50
+    },
+    button: {
+        marginTop: 12,
+        borderRadius: 10,
+        backgroundColor: '#000'
+    },
+    title: {
+        marginBottom: 8,
+        textAlign: 'center',
+        color: '#000',
+        fontSize: 23,
+        fontWeight: '800',
     },
     infoContainer: {
-        padding: 20,
+        padding: 16,
+        backgroundColor: '#fff',
     },
     infoRow: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginBottom: 8,
+        marginBottom: 6,
     },
     infoText: {
         marginLeft: 8,
-        fontSize: 16,
     },
     card: {
-        marginHorizontal: 20,
-        marginVertical: 10,
-    },
-    mapImage: {
-        width: '100%',
-        height: 200,
-        borderRadius: 10,
-    },
-    renderImage: {
-        width: '100%',
-        height: 160,
-        borderRadius: 10,
-        marginBottom: 10,
-    },
-    fixedButtons: {
-        flexDirection: 'row',
-        justifyContent: 'space-around',
-        padding: 16,
-        borderTopWidth: 1,
-        borderColor: '#ccc',
-        backgroundColor: '#fff',
-        position: 'absolute',
-        bottom: 0,
-        width: '100%',
-    },
-    bottomButton: {
-        flex: 1,
-        marginHorizontal: 4,
+        margin: 12,
+        paddingHorizontal: 10,
+        paddingVertical: 20
     },
     realMap: {
         width: '100%',
         height: 200,
-        borderRadius: 10,
+        borderRadius: 12,
+    },
+    renderTitle:{
+        fontSize: 20,
+        fontWeight: 800
+    },
+    renderText: {
+        width: '60%',
+        paddingVertical: 20
+    },
+    renderImage: {
+        width: '50%',
+        height: 150,
+        position: 'absolute',
+        top: 30,
+        right: 0
+    },
+    cartTitle: {
+        fontWeight: 800,
+        fontSize: 20
+    },
+    titleDescription: {
+        fontSize: 20,
+        fontWeight: 800,
+        marginTop: 25
     }
 });
