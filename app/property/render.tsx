@@ -163,7 +163,7 @@ export default function RenderProperty() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#0c2c2c',
+        backgroundColor: '#000',
     },
     glView: {
         flex: 1,

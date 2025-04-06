@@ -52,20 +52,25 @@ export default function TabLayout() {
   });
 
   return (
-    <BottomNavigation
-      navigationState={{ index, routes }}
-      onIndexChange={setIndex}
-      renderScene={renderScene}
-      shifting={false}
-      activeColor="black"
-      inactiveColor="#929292"
-      barStyle={{
-        backgroundColor: '#f2f2f2',
-      }}
-      activeIndicatorStyle={{
-        backgroundColor: 'transparent',
-        borderWidth: 2
-      }}
-    />
+    <>
+      {isLoggedIn && (
+
+      <BottomNavigation
+        navigationState={{ index, routes }}
+        onIndexChange={setIndex}
+        renderScene={renderScene}
+        shifting={false}
+        activeColor="black"
+        inactiveColor="#929292"
+        barStyle={{
+          backgroundColor: '#f2f2f2',
+        }}
+        activeIndicatorStyle={{
+          backgroundColor: 'transparent',
+          borderWidth: 2
+        }}
+      />
+      )}
+    </>
   );
 }

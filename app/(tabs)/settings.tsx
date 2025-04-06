@@ -15,16 +15,22 @@ import {
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 import { DatePickerModal } from 'react-native-paper-dates';
 import { format } from 'date-fns';
+import { useDispatch } from 'react-redux';
+import { logout } from '@/store/slices/authSlice';
+import { useRouter } from 'expo-router';
 
 const Tab = createMaterialTopTabNavigator();
 
 function MisDocumentosScreen() {
+    
     const [nombre, setNombre] = useState('');
     const [apellido, setApellido] = useState('');
     const [tipoDoc, setTipoDoc] = useState('');
     const [numeroDoc, setNumeroDoc] = useState('');
     const [fechaNacimiento, setFechaNacimiento] = useState(undefined);
     const [open, setOpen] = useState(false);
+
+    
 
     return (
         <ScrollView style={{ padding: 20 }}>
@@ -63,6 +69,14 @@ function MisDocumentosScreen() {
 }
 
 function MiPerfilScreen() {
+    const dispatch = useDispatch()
+    const router = useRouter()
+
+    const logOutHandle = () => {
+        dispatch(logout())
+        router.push('/')
+    }
+    
     return (
         <View style={{ padding: 20, alignItems: 'center' }}>
             <Avatar.Image
@@ -73,6 +87,9 @@ function MiPerfilScreen() {
             <Text variant="titleMedium">Darrell Steward</Text>
             <Button mode="outlined" style={{ marginTop: 20 }}>
                 Cambiar contraseña
+            </Button>
+            <Button mode="outlined" style={{ marginTop: 20 }} onPress={logOutHandle}>
+                Cerrar sesion
             </Button>
         </View>
     );

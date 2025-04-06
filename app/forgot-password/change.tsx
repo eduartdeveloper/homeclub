@@ -32,7 +32,7 @@ export default function ResetPasswordScreen() {
         }else{
             setIsSuccess(true)
             showAlert('Contraseña actualizada');
-            router.replace('/login');
+            router.replace('/');
         }
     };
 

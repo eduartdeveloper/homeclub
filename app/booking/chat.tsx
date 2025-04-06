@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, TextInput, StyleSheet, FlatList, KeyboardAvoidingView, Platform, TouchableOpacity, Text, ImageBackground } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import BackButton from '@/components/BackButton';
 
 export default function ChatScreen() {
     const [messages, setMessages] = useState([
@@ -22,7 +23,7 @@ export default function ChatScreen() {
 
     const renderMessage = ({ item }) => (
         <View style={[styles.messageBubble, item.from === 'user' ? styles.userBubble : styles.agentBubble]}>
-            <Text style={styles.messageText}>{item.text}</Text>
+            <Text style={[styles.messageText,item.from === 'user' ? styles.userBubbleText : styles.agentBubbleText]}>{item.text}</Text>
         </View>
     );
 
@@ -32,6 +33,7 @@ export default function ChatScreen() {
             style={styles.background}
             resizeMode="cover"
         >
+            <BackButton />
             <View style={{ flex: 1 }}>
                 <KeyboardAvoidingView
                     style={styles.container}
@@ -44,7 +46,7 @@ export default function ChatScreen() {
                         keyExtractor={(item) => item.id}
                         contentContainerStyle={{ padding: 16 }}
                         keyboardShouldPersistTaps="handled"
-                        contentContainerStyle={{ padding: 16, flexGrow: 1, justifyContent: 'flex-end' }}
+                        contentContainerStyle={{ padding: 16, flexGrow: 1, justifyContent: 'flex-end', paddingBottom: 100 }}
                     />
 
 
@@ -85,12 +87,18 @@ const styles = StyleSheet.create({
         marginVertical: 5,
     },
     userBubble: {
-        backgroundColor: 'rgba(98, 0, 238, 0.8)',
+        backgroundColor: '#000',
         alignSelf: 'flex-end',
     },
     agentBubble: {
         backgroundColor: 'rgba(255, 255, 255, 0.8)',
         alignSelf: 'flex-start',
+    },
+    userBubbleText: {
+        color: 'white'
+    },
+    agentBubbleText: {
+        color: 'black'
     },
     messageText: {
         color: '#000',
@@ -117,7 +125,7 @@ const styles = StyleSheet.create({
         color: '#000',
     },
     sendButton: {
-        backgroundColor: '#6200ee',
+        backgroundColor: '#000',
         padding: 10,
         borderRadius: 20,
     }

@@ -19,7 +19,7 @@ export default function PropertiesScreen() {
 
 
     useEffect(() => {
-        fetch("https://run.mocky.io/v3/5fb17bbe-dcc5-4a75-ad0b-fe165714cc64")
+        fetch("https://run.mocky.io/v3/60d668c2-70e8-4597-ac4c-d881dd9aaaad")
             .then(res => res.json())
             .then(data => {
                 setAllProperties(data);
@@ -47,10 +47,14 @@ export default function PropertiesScreen() {
         const filtered = allProperties.filter(item => {
             const matchCity = selectedCity === "Todas" || item.city === selectedCity;
             const matchSearch = item.title.toLowerCase().includes(text.toLowerCase()) ||
-                                item.location.toLowerCase().includes(text.toLowerCase());
+                item.location.toLowerCase().includes(text.toLowerCase());
             return matchCity && matchSearch;
         });
         setFilteredProperties(filtered);
+    };
+
+    const formatCOP = (value) => {
+        return new Intl.NumberFormat('es-CO').format(value);
     };
 
 
@@ -65,7 +69,7 @@ export default function PropertiesScreen() {
             {/* Search Bar */}
             <View style={styles.searchBar}>
                 <MaterialCommunityIcons name="magnify" size={24} color="gray" />
-                <TextInput placeholder="Buscar..." style={styles.searchInput} onChangeText={handleSearch}/>
+                <TextInput placeholder="Buscar..." style={styles.searchInput} onChangeText={handleSearch} />
             </View>
 
             {/* City Filters */}
@@ -97,7 +101,7 @@ export default function PropertiesScreen() {
                             <MaterialCommunityIcons name="arrow-top-right" size={24} color="white" />
                         </View>
                         <View style={styles.cardContent}>
-                            <Text style={styles.price}>{item.price}</Text>
+                            <Text style={styles.price}>${formatCOP(item.price)}<Text style={{fontSize: 12}}>/ mes</Text></Text>
                             <Text style={styles.propertyTitle}>{item.title}</Text>
                             <Text style={styles.propertyLocation}>{item.location}</Text>
                             <View style={styles.propertyDetails}>

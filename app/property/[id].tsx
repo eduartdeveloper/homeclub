@@ -15,7 +15,7 @@ export default function PropertyDetail() {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        fetch('https://run.mocky.io/v3/5fb17bbe-dcc5-4a75-ad0b-fe165714cc64')
+        fetch('https://run.mocky.io/v3/60d668c2-70e8-4597-ac4c-d881dd9aaaad')
             .then(res => res.json())
             .then(data => {
                 const selected = data.find(item => item.id === id);
@@ -48,7 +48,9 @@ export default function PropertyDetail() {
 
         Linking.openURL(url);
     };
-
+    const formatCOP = (value) => {
+        return new Intl.NumberFormat('es-CO').format(value);
+    };
     return (
         <View style={{ flex: 1, backgroundColor: 'white' }}>
             <BackButton />
@@ -79,6 +81,10 @@ export default function PropertyDetail() {
                     <View style={styles.infoRow}>
                         <MaterialCommunityIcons name="map-marker" size={15} color="black" style={styles.detailIcon} />
                         <Text style={styles.infoText}>{property.location}</Text>
+                    </View>
+                    <View style={styles.infoRow}>
+                        <MaterialCommunityIcons name="cash" size={15} color="black" style={styles.detailIcon} />
+                        <Text style={styles.infoText}>${formatCOP(property.price)}<Text style={{fontSize: 12}}>/ mes</Text></Text>
                     </View>
 
                     <Text style={styles.titleDescription}>Descripción</Text>
@@ -132,27 +138,27 @@ export default function PropertyDetail() {
                     </Card.Content>
                 </Card>
 
-                
+
 
             </ScrollView>
             <View style={styles.fixedBottomContainer}>
-                    <Button
-                        mode="contained"
-                        onPress={() => alert('Reserva realizada')}
-                        style={[styles.fixedButton, styles.button]}
-                        labelStyle={{ color: '#fff' }}
-                    >
-                        Reservar
-                    </Button>
-                    <Button
-                        mode="outlined"
-                        onPress={() => router.push('/booking/chat')}
-                        style={[styles.fixedButton, styles.button]}
-                        labelStyle={{ color: '#fff' }}
-                    >
-                        Escríbenos
-                    </Button>
-                </View>
+                <Button
+                    mode="contained"
+                    onPress={() => router.push(`/booking/${property.id}`)}
+                    style={[styles.fixedButton, styles.button]}
+                    labelStyle={{ color: '#fff' }}
+                >
+                    Reservar
+                </Button>
+                <Button
+                    mode="outlined"
+                    onPress={() => router.push('/booking/chat')}
+                    style={[styles.fixedButton, styles.button]}
+                    labelStyle={{ color: '#fff' }}
+                >
+                    Escríbenos
+                </Button>
+            </View>
         </View>
     );
 }
@@ -238,8 +244,8 @@ const styles = StyleSheet.create({
         paddingBottom: Platform.OS === 'ios' ? 30 : 16,
         borderTopWidth: 1,
         borderTopColor: '#eee',
-        zIndex: 999, 
-        elevation: 20, 
+        zIndex: 999,
+        elevation: 20,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: -3 },
         shadowOpacity: 0.1,
@@ -250,5 +256,5 @@ const styles = StyleSheet.create({
         marginHorizontal: 6,
         borderRadius: 10,
     }
-    
+
 });
