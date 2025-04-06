@@ -11,7 +11,6 @@ export default function Step3({ selectedPropertyId, range }) {
     };
 
     useEffect(() => {
-        console.log('range', range)
         fetch('https://run.mocky.io/v3/60d668c2-70e8-4597-ac4c-d881dd9aaaad')
             .then(res => res.json())
             .then(data => {

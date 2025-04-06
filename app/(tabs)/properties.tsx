@@ -24,7 +24,6 @@ export default function PropertiesScreen() {
             .then(data => {
                 setAllProperties(data);
                 setFilteredProperties(data);
-                console.log(data)
                 // Extraer ciudades únicas
                 const uniqueCities = ["Todas", ...new Set(data.map(item => item.city))];
                 setCities(uniqueCities);

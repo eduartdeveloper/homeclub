@@ -1,35 +1,30 @@
-import React from "react";
+import { useRouter } from "expo-router";
+import React, { useEffect, useState } from "react";
 import { View, FlatList, Image, StyleSheet } from "react-native";
 import { Card, Text, IconButton } from "react-native-paper";
 
-const reservations = [
-    {
-        id: "1",
-        title: "Hotel in Miami",
-        location: "Miami Beach, FL",
-        image: "https://images.pexels.com/photos/259588/pexels-photo-259588.jpeg",
-        price: "$250/night",
-        duration: "3 nights",
-    },
-    {
-        id: "2",
-        title: "Resort in Cancun",
-        location: "Cancun, Mexico",
-        image: "https://images.pexels.com/photos/259588/pexels-photo-259588.jpeg",
-        price: "$300/night",
-        duration: "5 nights",
-    },
-    {
-        id: "3",
-        title: "Cabin in Aspen",
-        location: "Aspen, CO",
-        image: "https://images.pexels.com/photos/259588/pexels-photo-259588.jpeg",
-        price: "$180/night",
-        duration: "2 nights",
-    },
-];
-
 export default function ReservationsScreen() {
+    const router = useRouter()
+    const [reservations, setReservations] = useState([]);
+
+    const formatCOP = (value) => {
+        return new Intl.NumberFormat('es-CO').format(value);
+    };
+
+    useEffect(() => {
+        const fetchReservations = async () => {
+            try {
+                const response = await fetch("https://run.mocky.io/v3/a75e7a9a-23b6-41e6-b80b-93fc3b501d90");
+                const data = await response.json();
+                setReservations(data);
+            } catch (error) {
+                console.error("Error fetching reservations:", error);
+            }
+        };
+
+        fetchReservations();
+    }, []);
+
     return (
         <View style={styles.container}>
             <Text variant="headlineMedium" style={styles.header}>
@@ -39,7 +34,7 @@ export default function ReservationsScreen() {
                 data={reservations}
                 keyExtractor={(item) => item.id}
                 renderItem={({ item }) => (
-                    <Card style={styles.card}>
+                    <Card style={styles.card} onPress={() => router.push(`/booking/${item.id}/detail`) }>
                         <View style={styles.cardContent}>
                             <Image source={{ uri: item.image }} style={styles.image} />
                             <View style={styles.info}>
@@ -48,10 +43,13 @@ export default function ReservationsScreen() {
                                     {item.location}
                                 </Text>
                                 <Text variant="bodyMedium" style={styles.price}>
-                                    {item.price}
+                                    ${formatCOP(item.price)}
                                 </Text>
                                 <Text variant="bodySmall" style={styles.duration}>
-                                    {item.duration}
+                                    {item.duration} dias
+                                </Text>
+                                <Text variant="bodySmall" style={styles.duration}>
+                                    Estado: {item.status}
                                 </Text>
                             </View>
                             <IconButton icon="arrow-right" size={24} />
@@ -62,11 +60,11 @@ export default function ReservationsScreen() {
         </View>
     );
 }
-
 const styles = StyleSheet.create({
     container: {
         flex: 1,
         padding: 16,
+        paddingTop:50,
         backgroundColor: "#F8F9FA",
     },
     header: {

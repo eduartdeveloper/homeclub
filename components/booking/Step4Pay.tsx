@@ -12,12 +12,8 @@ import {
     ScrollView
 } from 'react-native';
 
-export default function Step4() {
-    const [cardName, setCardName] = useState('');
-    const [cardNumber, setCardNumber] = useState('');
-    const [cardMonth, setCardMonth] = useState('');
-    const [cardYear, setCardYear] = useState('');
-    const [cardCvv, setCardCvv] = useState('');
+export default function Step4({ form, setForm }) {
+    
     const [isCardFlipped, setIsCardFlipped] = useState(false);
 
     const animatedValue = useRef(new Animated.Value(0)).current;
@@ -75,19 +71,19 @@ export default function Step4() {
                             </View>
 
                             <Text style={styles.cardNumber}>
-                                {cardNumber || '#### #### #### ####'}
+                                {form.cardNumber || '#### #### #### ####'}
                             </Text>
                             <View style={styles.cardFooter}>
                                 <View>
                                     <Text style={styles.label}>Titular</Text>
                                     <Text style={styles.cardText}>
-                                        {cardName || 'NOMBRE COMPLETO'}
+                                        {form.cardName || 'NOMBRE COMPLETO'}
                                     </Text>
                                 </View>
                                 <View>
                                     <Text style={styles.label}>Expira</Text>
                                     <Text style={styles.cardText}>
-                                        {(cardMonth || 'MM')}/{(cardYear || 'YY')}
+                                        {(form.cardMonth || 'MM')}/{(form.cardYear || 'YY')}
                                     </Text>
                                 </View>
                             </View>
@@ -113,7 +109,7 @@ export default function Step4() {
                             <View style={styles.cvvContainer}>
                                 <Text style={styles.label}>CVC</Text>
                                 <View style={styles.cvvBox}>
-                                    <Text style={styles.cvvText}>{cardCvv || '***'}</Text>
+                                    <Text style={styles.cvvText}>{form.cardCvv || '***'}</Text>
                                 </View>
                             </View>
                         </ImageBackground>
@@ -128,7 +124,7 @@ export default function Step4() {
                         placeholder="Número de tarjeta"
                         keyboardType="number-pad"
                         maxLength={19}
-                        value={cardNumber}
+                        value={form.cardNumber}
                         onChangeText={(text) => {
                             // Elimina todo lo que no sea número
                             const cleaned = text.replace(/\D/g, '').slice(0, 16);
@@ -136,15 +132,15 @@ export default function Step4() {
                             // Agrupa en bloques de 4
                             const formatted = cleaned.replace(/(.{4})/g, '$1 ').trim();
 
-                            setCardNumber(formatted);
+                            setForm({...form, cardNumber: formatted});
                         }}
                     />
                     <TextInput
                         style={styles.input}
                         placeholder="Nombre del titular"
                         maxLength={19}
-                        value={cardName}
-                        onChangeText={setCardName}
+                        value={form.cardName}
+                        onChangeText={(text) => setForm({...form, cardName: text })}
                     />
                     <View style={styles.row}>
                         <TextInput
@@ -152,16 +148,16 @@ export default function Step4() {
                             placeholder="MM"
                             keyboardType="numeric"
                             maxLength={2}
-                            value={cardMonth}
-                            onChangeText={setCardMonth}
+                            value={form.cardMonth}
+                            onChangeText={(text) => setForm({...form, cardMonth: text })}
                         />
                         <TextInput
                             style={[styles.input, styles.halfInput]}
                             placeholder="YY"
                             keyboardType="numeric"
                             maxLength={2}
-                            value={cardYear}
-                            onChangeText={setCardYear}
+                            value={form.cardYear}
+                            onChangeText={(text) => setForm({...form, cardYear: text })}
                         />
                     </View>
                     <TextInput
@@ -169,8 +165,8 @@ export default function Step4() {
                         placeholder="CVC"
                         keyboardType="numeric"
                         maxLength={4}
-                        value={cardCvv}
-                        onChangeText={setCardCvv}
+                        value={form.cardCvv}
+                        onChangeText={(text) => setForm({...form, cardCvv: text })}
                         onFocus={flipToBack}
                         onBlur={flipToFront}
                     />

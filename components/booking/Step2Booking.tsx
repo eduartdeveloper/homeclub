@@ -4,12 +4,11 @@ import { Text, TextInput, Button } from 'react-native-paper';
 import { DatePickerModal, TimePickerModal } from 'react-native-paper-dates';
 import { format } from 'date-fns';
 
-export default function Step2({ range, changeRange }) {
-    const [cantidadPersonas, setCantidadPersonas] = useState('');
+export default function Step2({ range, changeRange, reservaInfo, setReservaInfo }) {
+    
     const [openDate, setOpenDate] = useState(false);
     const [openTime, setOpenTime] = useState(false);
-    // const [range, setRange] = useState({ startDate: undefined, endDate: undefined });
-    const [horaCheckIn, setHoraCheckIn] = useState(undefined);
+    
 
     const onConfirmRange = (params) => {
         setOpenDate(false);
@@ -26,8 +25,8 @@ export default function Step2({ range, changeRange }) {
 
             <TextInput
                 label="Cantidad de personas"
-                value={cantidadPersonas}
-                onChangeText={setCantidadPersonas}
+                value={reservaInfo.cantidadPersonas}
+                onChangeText={ (text) => setReservaInfo({...reservaInfo,cantidadPersonas : text})}
                 keyboardType="numeric"
                 style={styles.input}
                 mode="outlined"
@@ -63,7 +62,7 @@ export default function Step2({ range, changeRange }) {
             <Pressable onPress={() => setOpenTime(true)}>
                 <TextInput
                     label="Hora de check-in"
-                    value={horaCheckIn ? format(horaCheckIn, 'HH:mm') : ''}
+                    value={reservaInfo.horaCheckIn ? format(reservaInfo.horaCheckIn, 'HH:mm') : ''}
                     editable={false}
                     style={styles.input}
                     mode="outlined"
@@ -78,11 +77,11 @@ export default function Step2({ range, changeRange }) {
                     const selectedTime = new Date();
                     selectedTime.setHours(hours);
                     selectedTime.setMinutes(minutes);
-                    setHoraCheckIn(selectedTime);
+                    setReservaInfo({ ...reservaInfo, horaCheckIn: selectedTime });
                     setOpenTime(false);
                 }}
-                hours={horaCheckIn?.getHours()}
-                minutes={horaCheckIn?.getMinutes()}
+                hours={reservaInfo.horaCheckIn?.getHours()}
+                minutes={reservaInfo.horaCheckIn?.getMinutes()}
                 locale="es"
                 label="Selecciona hora de check-in"
             />

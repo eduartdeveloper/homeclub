@@ -22,16 +22,92 @@ export default function ReservaScreen() {
 
     const [pasoActual, setPasoActual] = useState(0);
     const [range, setRange] = useState({ startDate: undefined, endDate: undefined });
+    const [formPaso1, setFormPaso1] = useState({
+        nombre: '',
+        apellido: '',
+        tipoDoc: '',
+        numeroDoc: '',
+        fechaNacimiento: null,
+    });
+    const [reservaInfo, setReservaInfo] = useState({
+        cantidadPersonas: '',
+        horaCheckIn: null,
+    });
+    const [formPaso4, setFormPaso4] = useState({
+        cardName: '',
+        cardNumber: '',
+        cardMonth: '',
+        cardYear: '',
+        cardCvv: '',
+    });
+
 
     const renderPaso = () => {
         switch (pasoActual) {
-            case 0: return <Step1 />;
-            case 1: return <Step2 range={range} changeRange={setRange} />;
+            case 0: return <Step1 form={formPaso1} setForm={setFormPaso1} />;
+            case 1: return (
+                <Step2
+                    range={range}
+                    changeRange={setRange}
+                    reservaInfo={reservaInfo}
+                    setReservaInfo={setReservaInfo}
+                />
+            );
             case 2: return <Step3 selectedPropertyId={id} range={range} />;
-            case 3: return <Step4 />;
+            case 3: return <Step4 form={formPaso4} setForm={setFormPaso4} />;
             default: return null;
         }
     };
+
+    const validarPaso1 = () => {
+        const { nombre, apellido, tipoDoc, numeroDoc, fechaNacimiento } = formPaso1;
+        if (!nombre || !apellido || !tipoDoc || !numeroDoc || !fechaNacimiento) {
+            alert('Por favor completa todos los campos antes de continuar.');
+            return false;
+        }
+
+        return true;
+    };
+    const validarPaso2 = () => {
+        const { cantidadPersonas, horaCheckIn } = reservaInfo;
+        if (!cantidadPersonas || !horaCheckIn || range.startDate === undefined ) {
+            alert('Por favor completa todos los campos antes de continuar.');
+            return false;
+        }
+
+        return true;
+    };
+    const validarPaso4 = () => {
+        const { cardName, cardNumber, cardMonth, cardYear, cardCvv } = formPaso4;
+        
+        if (!cardName || !cardNumber || !cardMonth || !cardYear || !cardCvv) {
+            alert('Por favor completa todos los campos de la tarjeta.');
+            return false;
+        }
+    
+        if (cardNumber.replace(/\s/g, '').length !== 16) {
+            alert('Número de tarjeta inválido.');
+            return false;
+        }
+    
+        if (parseInt(cardMonth) < 1 || parseInt(cardMonth) > 12) {
+            alert('Mes inválido.');
+            return false;
+        }
+    
+        if (parseInt(cardYear) < 25) { 
+            alert('Año inválido.');
+            return false;
+        }
+    
+        if (cardCvv.length < 3 || cardCvv.length > 4) {
+            alert('CVC inválido.');
+            return false;
+        }
+    
+        // aqui registro la reservaaaaaaaaqa
+    };
+    
 
     return (
         <View style={styles.container}>
@@ -51,21 +127,29 @@ export default function ReservaScreen() {
 
             <View style={styles.botones}>
                 {pasoActual > 0 && (
-                    <Button mode="outlined" style={styles.buttonOutlined} labelStyle={{color: '#000'}}  onPress={() => setPasoActual(pasoActual - 1)}>
+                    <Button mode="outlined" style={styles.buttonOutlined} labelStyle={{ color: '#000' }} onPress={() => setPasoActual(pasoActual - 1)}>
                         Atrás
                     </Button>
                 )}
                 {pasoActual < pasos.length - 1 ? (
-                    <Button mode="contained" style={styles.buttonContained} onPress={() => setPasoActual(pasoActual + 1)}>
+                    <Button
+                        mode="contained"
+                        style={styles.buttonContained}
+                        onPress={() => {
+                            if (pasoActual === 0 && !validarPaso1()) return;
+                            if (pasoActual === 1 && !validarPaso2()) return;
+                            setPasoActual(pasoActual + 1);
+                        }}
+                    >
                         Siguiente
                     </Button>
                 ) : (
-                    <Button mode="contained" style={styles.buttonContained} onPress={() => console.log('Enviar reserva')}>
+                    <Button mode="contained" style={styles.buttonContained} onPress={validarPaso4}>
                         Confirmar y Pagar
                     </Button>
                 )}
             </View>
-        </View>
+        </View >
     );
 }
 
@@ -109,7 +193,7 @@ const styles = StyleSheet.create({
     },
     buttonOutlined: {
         borderRadius: 10,
-        borderWidth:2,
+        borderWidth: 2,
         borderColor: "#000"
     },
 });
