@@ -1,41 +1,50 @@
 import React, { useState } from 'react';
 import { View, StyleSheet, ImageBackground, Image } from 'react-native';
-import { Text, TextInput, Button, Portal, Dialog, Paragraph, useTheme } from 'react-native-paper';
+import { Text, TextInput, Button, useTheme } from 'react-native-paper';
 import { useRouter } from 'expo-router';
 import BackButton from '@/components/BackButton';
 import AlertBox from '@/components/AlertBox';
 
 export default function ResetPasswordScreen() {
     const router = useRouter();
-    const colors = useTheme()
-    const [password, setPassword] = useState('');
-    const [confirmPassword, setConfirmPassword] = useState('');
-    const [showPassword, setShowPassword] = useState(false);
-    const [dialogVisible, setDialogVisible] = useState(false);
-    const [dialogMessage, setDialogMessage] = useState('');
-    const [isSuccess, setIsSuccess] = useState(false);
+    const { colors } = useTheme();
 
+    const [password, setPassword] = useState<string>('');
+    const [confirmPassword, setConfirmPassword] = useState<string>('');
+    const [showPassword, setShowPassword] = useState<boolean>(false);
+    const [dialogVisible, setDialogVisible] = useState<boolean>(false);
+    const [dialogMessage, setDialogMessage] = useState<string>('');
+    const [isSuccess, setIsSuccess] = useState<boolean>(false);
 
     const showAlert = (message: string) => {
         setDialogMessage(message);
         setDialogVisible(true);
-    }
+    };
 
     const hideDialog = () => {
         setDialogVisible(false);
+        if (isSuccess) {
+            router.replace('/')
+        }
     };
 
+    // Validar y manejar el guardado de la contraseña
     const handleSave = () => {
         if (password !== confirmPassword) {
             showAlert('Las contraseñas no coinciden');
             return;
-        }else{
-            setIsSuccess(true)
-            showAlert('Contraseña actualizada');
-            router.replace('/');
         }
+
+        setIsSuccess(true);
+        showAlert('Contraseña actualizada');
     };
 
+    const passwordIcon = (
+        <TextInput.Icon
+            icon={showPassword ? 'eye-off' : 'eye'}
+            onPress={() => setShowPassword(!showPassword)}
+        />
+    );
 
     return (
         <ImageBackground
@@ -44,16 +53,21 @@ export default function ResetPasswordScreen() {
             resizeMode="cover"
         >
             <BackButton />
+
             <View style={styles.header}>
                 <Text variant="headlineLarge" style={styles.logoContainer}>
-                    <Image source={require('../../assets/images/logo.png')} style={styles.logo} resizeMode='contain' />
+                    <Image
+                        source={require('../../assets/images/logo.png')}
+                        style={styles.logo}
+                        resizeMode="contain"
+                    />
                 </Text>
             </View>
-            <Text variant="headlineMedium" style={styles.title}>Cambiar contraseña</Text>
-            <Text style={styles.subtitle}>
-                Ingresa tu nueva contraseña.
-            </Text>
 
+            <Text variant="headlineMedium" style={styles.title}>Cambiar contraseña</Text>
+            <Text style={styles.subtitle}>Ingresa tu nueva contraseña.</Text>
+
+            {/* Campo Nueva Contraseña */}
             <TextInput
                 label="Nueva contraseña"
                 mode="outlined"
@@ -61,14 +75,10 @@ export default function ResetPasswordScreen() {
                 onChangeText={setPassword}
                 secureTextEntry={!showPassword}
                 style={styles.input}
-                right={
-                    <TextInput.Icon
-                        icon={showPassword ? 'eye-off' : 'eye'}
-                        onPress={() => setShowPassword(!showPassword)}
-                    />
-                }
+                right={passwordIcon}
             />
 
+            {/* Campo Confirmar Contraseña */}
             <TextInput
                 label="Confirmar contraseña"
                 mode="outlined"
@@ -76,12 +86,7 @@ export default function ResetPasswordScreen() {
                 onChangeText={setConfirmPassword}
                 secureTextEntry={!showPassword}
                 style={styles.input}
-                right={
-                    <TextInput.Icon
-                        icon={showPassword ? 'eye-off' : 'eye'}
-                        onPress={() => setShowPassword(!showPassword)}
-                    />
-                }
+                right={passwordIcon}
             />
 
             <Button
@@ -90,22 +95,17 @@ export default function ResetPasswordScreen() {
                 disabled={!password || !confirmPassword}
                 style={[
                     styles.button,
-                    {
-                        backgroundColor: !password || !confirmPassword ? '#929292' : '#000',
-                    },
+                    { backgroundColor: !password || !confirmPassword ? '#929292' : colors.buttonPrimary || '#000' }
                 ]}
-                labelStyle={{
-                    color: 'white',
-                }}
+                labelStyle={{ color: '#FFF' }}
             >
                 Guardar
             </Button>
 
-
-            <AlertBox 
-                visible={dialogVisible} 
-                onDismiss={hideDialog} 
-                message={dialogMessage} 
+            <AlertBox
+                visible={dialogVisible}
+                onDismiss={hideDialog}
+                message={dialogMessage}
                 {...(isSuccess && {
                     icon: 'check-circle',
                     iconColor: '#046974',
@@ -115,6 +115,7 @@ export default function ResetPasswordScreen() {
     );
 }
 
+
 const styles = StyleSheet.create({
     container: {
         flex: 1,
@@ -122,11 +123,22 @@ const styles = StyleSheet.create({
         paddingTop: 60,
         backgroundColor: '#fff',
     },
+    header: {
+        alignItems: 'center',
+        marginBottom: 32,
+    },
+    logoContainer: {
+        width: '70%',
+    },
+    logo: {
+        width: '100%',
+        height: 100,
+    },
     title: {
         textAlign: 'center',
         marginBottom: 32,
         fontSize: 23,
-        fontWeight: 800
+        fontWeight: '800',
     },
     subtitle: {
         marginBottom: 24,
@@ -140,15 +152,4 @@ const styles = StyleSheet.create({
         marginTop: 12,
         borderRadius: 10,
     },
-    header: {
-        alignItems: 'center',
-        marginBottom: 32,
-    },
-    logoContainer: {
-        width: '70%'
-    },
-    logo: {
-        width: '100%',
-        height: 100,
-    }
 });

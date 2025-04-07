@@ -5,23 +5,30 @@ import { useRouter } from 'expo-router';
 import BackButton from '@/components/BackButton';
 import AlertBox from '@/components/AlertBox';
 
+interface User {
+    email: string;
+    password: string;
+}
+
 export default function ForgotPasswordScreen() {
     const { colors } = useTheme();
     const router = useRouter();
-    const [email, setEmail] = useState('');
-    const [dialogVisible, setDialogVisible] = useState(false);
-    const [dialogMessage, setDialogMessage] = useState('');
 
-    const showAlert = (message: string) => {
+    const [email, setEmail] = useState<string>('');
+    const [dialogVisible, setDialogVisible] = useState<boolean>(false);
+    const [dialogMessage, setDialogMessage] = useState<string>('');
+
+    const showAlert = (message: string): void => {
         setDialogMessage(message);
         setDialogVisible(true);
     };
 
-    const hideDialog = () => {
+    const hideDialog = (): void => {
         setDialogVisible(false);
     };
 
-    const handleSubmit = async () => {
+    // logica de validar la cuenta y proceder a cambiar 
+    const handleSubmit = async (): Promise<void> => {
         if (!email.trim()) {
             showAlert('Por favor, ingresa tu correo electrónico.');
             return;
@@ -29,9 +36,9 @@ export default function ForgotPasswordScreen() {
 
         try {
             const response = await fetch('https://run.mocky.io/v3/1f355184-b062-41d5-81c1-817b36e644cf');
-            const data = await response.json();
+            const data: { users: User[] } = await response.json();
 
-            const userExists = data.users.some((user: any) => user.email === email.trim());
+            const userExists = data.users.some((user) => user.email === email.trim());
 
             if (userExists) {
                 router.push('/forgot-password/change');
@@ -51,20 +58,25 @@ export default function ForgotPasswordScreen() {
             resizeMode="cover"
         >
             <BackButton />
+
             <View style={styles.header}>
                 <Text variant="headlineLarge" style={styles.logoContainer}>
-                    <Image source={require('../../assets/images/logo.png')} style={styles.logo} resizeMode='contain' />
+                    <Image
+                        source={require('../../assets/images/logo.png')}
+                        style={styles.logo}
+                        resizeMode="contain"
+                    />
                 </Text>
             </View>
 
             <Text variant="headlineMedium" style={styles.title}>
                 Recuperar contraseña
             </Text>
-
             <Text style={styles.subtitle}>
                 Ingresa tu correo electrónico y te enviaremos instrucciones para restablecer tu contraseña.
             </Text>
 
+            {/* Campo de correo electrónico */}
             <TextInput
                 label="Correo electrónico"
                 mode="outlined"
@@ -75,11 +87,19 @@ export default function ForgotPasswordScreen() {
                 style={styles.input}
             />
 
-            <Button mode="contained" onPress={handleSubmit} style={[styles.button, { backgroundColor: colors.buttonPrimary }]}>
+            <Button
+                mode="contained"
+                onPress={handleSubmit}
+                style={[styles.button, { backgroundColor: colors.buttonPrimary }]}
+            >
                 Enviar instrucciones
             </Button>
 
-            <AlertBox visible={dialogVisible} onDismiss={hideDialog} message={dialogMessage} />
+            <AlertBox
+                visible={dialogVisible}
+                onDismiss={hideDialog}
+                message={dialogMessage}
+            />
         </ImageBackground>
     );
 }

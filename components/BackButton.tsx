@@ -4,10 +4,10 @@ import { IconButton } from 'react-native-paper';
 import { useRouter } from 'expo-router';
 
 interface BackButtonProps {
-    iconColor?: string;
-    containerColor?: string;
-    style?: ViewStyle;
-    onPress?: () => void;
+    iconColor?: string;         // color del ícono
+    containerColor?: string;    // color de fondo del botón
+    style?: ViewStyle;          // estilos extra para el botón
+    onPress?: () => void;       // función al presionar el botón
 }
 
 const BackButton: React.FC<BackButtonProps> = ({
@@ -22,7 +22,7 @@ const BackButton: React.FC<BackButtonProps> = ({
         <IconButton
             icon="arrow-left"
             size={24}
-            onPress={onPress || (() => router.back())}
+            onPress={onPress ?? (() => router.back())}
             style={[styles.backButton, style]}
             mode="contained"
             containerColor={containerColor}

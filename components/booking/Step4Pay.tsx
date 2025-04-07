@@ -9,15 +9,29 @@ import {
     Keyboard,
     Text,
     Image,
-    ScrollView
+    ScrollView,
 } from 'react-native';
 
-export default function Step4({ form, setForm }) {
-    
+interface CardForm {
+    cardNumber: string;
+    cardName: string;
+    cardMonth: string;
+    cardYear: string;
+    cardCvv: string;
+}
+
+
+interface Step4Props {
+    form: CardForm;
+    setForm: (form: CardForm) => void;
+}
+
+export default function Step4({ form, setForm }: Step4Props) {
     const [isCardFlipped, setIsCardFlipped] = useState(false);
 
     const animatedValue = useRef(new Animated.Value(0)).current;
 
+    // Animación al reverso
     const flipToBack = () => {
         Animated.timing(animatedValue, {
             toValue: 180,
@@ -26,6 +40,7 @@ export default function Step4({ form, setForm }) {
         }).start(() => setIsCardFlipped(true));
     };
 
+    // Animación al frente
     const flipToFront = () => {
         Animated.timing(animatedValue, {
             toValue: 0,
@@ -34,24 +49,23 @@ export default function Step4({ form, setForm }) {
         }).start(() => setIsCardFlipped(false));
     };
 
+    // Interpolación de rotación para el frente
     const frontInterpolate = animatedValue.interpolate({
         inputRange: [0, 180],
         outputRange: ['0deg', '180deg'],
     });
 
+    // Interpolación de rotación para el reverso
     const backInterpolate = animatedValue.interpolate({
         inputRange: [0, 180],
         outputRange: ['180deg', '360deg'],
     });
 
-
-
     return (
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
             <View style={styles.container}>
-
+                {/* Tarjeta de creditoo */}
                 <View style={styles.cardWrapper}>
-                    {/* Parte frontal */}
                     <Animated.View
                         style={[
                             styles.cardFace,
@@ -65,20 +79,17 @@ export default function Step4({ form, setForm }) {
                             style={styles.cardBackground}
                             imageStyle={{ borderRadius: 16 }}
                         >
-                            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                                <Image source={require('../../assets/images/chip.png')} style={styles.chip} resizeMode='contain' />
-                                <Image source={require('../../assets/images/visa.png')} style={styles.visa} resizeMode='contain' />
+                            <View style={styles.headerRow}>
+                                <Image source={require('../../assets/images/chip.png')} style={styles.chip} resizeMode="contain" />
+                                <Image source={require('../../assets/images/visa.png')} style={styles.visa} resizeMode="contain" />
                             </View>
 
-                            <Text style={styles.cardNumber}>
-                                {form.cardNumber || '#### #### #### ####'}
-                            </Text>
+                            <Text style={styles.cardNumber}>{form.cardNumber || '#### #### #### ####'}</Text>
+
                             <View style={styles.cardFooter}>
                                 <View>
                                     <Text style={styles.label}>Titular</Text>
-                                    <Text style={styles.cardText}>
-                                        {form.cardName || 'NOMBRE COMPLETO'}
-                                    </Text>
+                                    <Text style={styles.cardText}>{form.cardName || 'NOMBRE COMPLETO'}</Text>
                                 </View>
                                 <View>
                                     <Text style={styles.label}>Expira</Text>
@@ -89,8 +100,6 @@ export default function Step4({ form, setForm }) {
                             </View>
                         </ImageBackground>
                     </Animated.View>
-
-                    {/* Parte trasera */}
                     <Animated.View
                         style={[
                             styles.cardFace,
@@ -105,7 +114,8 @@ export default function Step4({ form, setForm }) {
                             imageStyle={{ borderRadius: 16 }}
                         >
                             <View style={styles.blackBar} />
-                            <Image source={require('../../assets/images/visa.png')} style={styles.visaBack} resizeMode='contain' />
+                            <Image source={require('../../assets/images/visa.png')} style={styles.visaBack} resizeMode="contain" />
+
                             <View style={styles.cvvContainer}>
                                 <Text style={styles.label}>CVC</Text>
                                 <View style={styles.cvvBox}>
@@ -116,9 +126,9 @@ export default function Step4({ form, setForm }) {
                     </Animated.View>
                 </View>
 
-                {/* Formulario */}
-                <ScrollView style={{paddingHorizontal: 16}} >
-
+                {/* Formulario de tarjeta */}
+                <ScrollView style={{ paddingHorizontal: 16 }}>
+                    {/* Número de tarjeta */}
                     <TextInput
                         style={styles.input}
                         placeholder="Número de tarjeta"
@@ -126,22 +136,22 @@ export default function Step4({ form, setForm }) {
                         maxLength={19}
                         value={form.cardNumber}
                         onChangeText={(text) => {
-                            // Elimina todo lo que no sea número
                             const cleaned = text.replace(/\D/g, '').slice(0, 16);
-
-                            // Agrupa en bloques de 4
                             const formatted = cleaned.replace(/(.{4})/g, '$1 ').trim();
-
-                            setForm({...form, cardNumber: formatted});
+                            setForm({ ...form, cardNumber: formatted });
                         }}
                     />
+
+                    {/* Titular */}
                     <TextInput
                         style={styles.input}
                         placeholder="Nombre del titular"
                         maxLength={19}
                         value={form.cardName}
-                        onChangeText={(text) => setForm({...form, cardName: text })}
+                        onChangeText={(text) => setForm({ ...form, cardName: text })}
                     />
+
+                    {/* Fecha de expiración */}
                     <View style={styles.row}>
                         <TextInput
                             style={[styles.input, styles.halfInput]}
@@ -149,7 +159,7 @@ export default function Step4({ form, setForm }) {
                             keyboardType="numeric"
                             maxLength={2}
                             value={form.cardMonth}
-                            onChangeText={(text) => setForm({...form, cardMonth: text })}
+                            onChangeText={(text) => setForm({ ...form, cardMonth: text })}
                         />
                         <TextInput
                             style={[styles.input, styles.halfInput]}
@@ -157,16 +167,18 @@ export default function Step4({ form, setForm }) {
                             keyboardType="numeric"
                             maxLength={2}
                             value={form.cardYear}
-                            onChangeText={(text) => setForm({...form, cardYear: text })}
+                            onChangeText={(text) => setForm({ ...form, cardYear: text })}
                         />
                     </View>
+
+                    {/* Código de seguridad */}
                     <TextInput
                         style={styles.input}
                         placeholder="CVC"
                         keyboardType="numeric"
                         maxLength={4}
                         value={form.cardCvv}
-                        onChangeText={(text) => setForm({...form, cardCvv: text })}
+                        onChangeText={(text) => setForm({ ...form, cardCvv: text })}
                         onFocus={flipToBack}
                         onBlur={flipToFront}
                     />
@@ -179,14 +191,7 @@ export default function Step4({ form, setForm }) {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        padding: 0,
         backgroundColor: '#f4f4f4',
-    },
-    title: {
-        fontSize: 20,
-        fontWeight: 'bold',
-        marginBottom: 16,
-        color: '#333',
     },
     cardWrapper: {
         width: '100%',
@@ -212,25 +217,27 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         padding: 20,
     },
+    headerRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+    },
     chip: {
         width: 50,
         height: 40,
         borderRadius: 8,
-        alignSelf: 'flex-start',
     },
     visa: {
         width: 70,
         height: 40,
         borderRadius: 8,
-        alignSelf: 'flex-end',
     },
     visaBack: {
         width: 70,
         height: 40,
-        borderRadius: 8,
         position: 'absolute',
         bottom: 16,
-        right: 16
+        right: 16,
     },
     cardNumber: {
         color: '#fff',

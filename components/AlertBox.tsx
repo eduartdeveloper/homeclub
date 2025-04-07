@@ -3,11 +3,11 @@ import { View, StyleSheet } from 'react-native';
 import { Portal, Dialog, Text, Button, Icon } from 'react-native-paper';
 
 type AlertProps = {
-    visible: boolean;
-    onDismiss: () => void;
-    message: string;
-    icon?: string;
-    iconColor?: string;
+    visible: boolean;        // si el diálogo está visible
+    onDismiss: () => void;   // función para cerrarlo
+    message: string;         // texto del mensaje
+    icon?: string;           // ícono opcional (por defecto: información)
+    iconColor?: string;      // color del ícono (por defecto: rojo)
 };
 
 export default function AlertBox({

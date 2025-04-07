@@ -1,57 +1,89 @@
-import React, { useState } from 'react';
-import { View, TextInput, StyleSheet, FlatList, KeyboardAvoidingView, Platform, TouchableOpacity, Text, ImageBackground } from 'react-native';
+import React, { useState, useCallback } from 'react';
+import {
+    View,
+    TextInput,
+    StyleSheet,
+    FlatList,
+    KeyboardAvoidingView,
+    Platform,
+    TouchableOpacity,
+    Text,
+    ImageBackground,
+    ListRenderItem
+} from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import BackButton from '@/components/BackButton';
 
+type Message = {
+    id: string;
+    text: string;
+    from: 'user' | 'agent';
+};
+
 export default function ChatScreen() {
-    const [messages, setMessages] = useState([
-        { id: '1', text: 'Hola 👋 ¿Qué dudas tienes sobre la propiedad?', from: 'agent' }
+    const [messages, setMessages] = useState<Message[]>([
+        { id: '1', text: 'Hola 👋 ¿Qué dudas tienes sobre la propiedad?', from: 'agent' },
     ]);
     const [input, setInput] = useState('');
 
-    const handleSend = () => {
+    // enviar mensaje
+    const handleSend = useCallback(() => {
         if (input.trim() === '') return;
 
-        const newMessage = {
+        const newMessage: Message = {
             id: Date.now().toString(),
-            text: input,
-            from: 'user'
+            text: input.trim(),
+            from: 'user',
         };
-        setMessages([...messages, newMessage]);
-        setInput('');
-    };
 
-    const renderMessage = ({ item }) => (
-        <View style={[styles.messageBubble, item.from === 'user' ? styles.userBubble : styles.agentBubble]}>
-            <Text style={[styles.messageText,item.from === 'user' ? styles.userBubbleText : styles.agentBubbleText]}>{item.text}</Text>
+        setMessages((prevMessages) => [...prevMessages, newMessage]);
+        setInput('');
+    }, [input]);
+
+    // renderizar cada mensaje
+    const renderMessage: ListRenderItem<Message> = ({ item }) => (
+        <View
+            style={[
+                styles.messageBubble,
+                item.from === 'user' ? styles.userBubble : styles.agentBubble,
+            ]}
+        >
+            <Text
+                style={[
+                    styles.messageText,
+                    item.from === 'user' ? styles.userBubbleText : styles.agentBubbleText,
+                ]}
+            >
+                {item.text}
+            </Text>
         </View>
     );
 
     return (
         <ImageBackground
-            source={require('../../assets/images/back-splash.png')} // Asegúrate de que la ruta es correcta
+            source={require('../../assets/images/back-splash.png')}
             style={styles.background}
             resizeMode="cover"
         >
             <BackButton />
+
             <View style={{ flex: 1 }}>
                 <KeyboardAvoidingView
                     style={styles.container}
-                    behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                    behavior={Platform.OS === 'ios' ? 'padding' : undefined}
                     keyboardVerticalOffset={90}
                 >
                     <FlatList
                         data={messages}
                         renderItem={renderMessage}
                         keyExtractor={(item) => item.id}
-                        contentContainerStyle={{ padding: 16 }}
                         keyboardShouldPersistTaps="handled"
-                        contentContainerStyle={{ padding: 16, flexGrow: 1, justifyContent: 'flex-end', paddingBottom: 100 }}
+                        contentContainerStyle={styles.chatContent}
                     />
-
-
                 </KeyboardAvoidingView>
             </View>
+
+            {/* Input de texto y botón de envío */}
             <View style={styles.inputContainer}>
                 <TextInput
                     style={styles.input}
@@ -77,8 +109,12 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: 'transparent',
         justifyContent: 'flex-end',
-        alignContent: 'flex-end'
-        // paddingTop: 50,
+    },
+    chatContent: {
+        padding: 16,
+        flexGrow: 1,
+        justifyContent: 'flex-end',
+        paddingBottom: 100,
     },
     messageBubble: {
         maxWidth: '80%',
@@ -94,13 +130,13 @@ const styles = StyleSheet.create({
         backgroundColor: 'rgba(255, 255, 255, 0.8)',
         alignSelf: 'flex-start',
     },
+    messageText: {
+        fontSize: 16,
+    },
     userBubbleText: {
-        color: 'white'
+        color: '#fff',
     },
     agentBubbleText: {
-        color: 'black'
-    },
-    messageText: {
         color: '#000',
     },
     inputContainer: {
@@ -112,7 +148,8 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         position: 'absolute',
         bottom: 0,
-        left: 0
+        left: 0,
+        right: 0,
     },
     input: {
         flex: 1,
@@ -128,5 +165,5 @@ const styles = StyleSheet.create({
         backgroundColor: '#000',
         padding: 10,
         borderRadius: 20,
-    }
+    },
 });

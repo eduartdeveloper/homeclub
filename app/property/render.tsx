@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import {
     View,
     ActivityIndicator,
@@ -18,30 +18,37 @@ import BackButton from '@/components/BackButton';
 
 export default function RenderProperty() {
     const [isLoading, setIsLoading] = useState(true);
+
     const modelRef = useRef<THREE.Object3D | null>(null);
     const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
+
     const zoomRef = useRef(1.5);
     const baseDistanceRef = useRef(1);
 
-    // PanResponder para rotar el modelo con el dedo
+    const SENSITIVITY = 0.0002;
+    const ZOOM_MIN = 0.5;
+    const ZOOM_MAX = 5;
+    const ROTATION_X_MIN = -1.2;
+    const ROTATION_X_MAX = 0.5;
+
+    // Rotación con gesto táctil, 
     const panResponder = useRef(
         PanResponder.create({
             onStartShouldSetPanResponder: () => true,
             onMoveShouldSetPanResponder: () => true,
-            onPanResponderMove: (_: GestureResponderEvent, gestureState: PanResponderGestureState) => {
+            onPanResponderMove: (_: GestureResponderEvent, gesture: PanResponderGestureState) => {
                 const model = modelRef.current;
                 if (model) {
-                    const sensitivity = 0.0002;
-                    model.rotation.y += gestureState.dx * sensitivity;
+                    model.rotation.y += gesture.dx * SENSITIVITY;
 
-                    let nextX = model.rotation.x + gestureState.dy * sensitivity;
-                    model.rotation.x = Math.max(-1.2, Math.min(0.5, nextX));
+                    const nextX = model.rotation.x + gesture.dy * SENSITIVITY;
+                    model.rotation.x = Math.max(ROTATION_X_MIN, Math.min(ROTATION_X_MAX, nextX));
                 }
             },
         })
     ).current;
 
-    // Actualiza la posición de la cámara al hacer zoom
+    // Actualizar zoom de cámara
     const updateCameraZoom = () => {
         if (cameraRef.current) {
             cameraRef.current.position.z = baseDistanceRef.current * zoomRef.current;
@@ -49,15 +56,16 @@ export default function RenderProperty() {
     };
 
     const handleZoomIn = () => {
-        zoomRef.current = Math.max(0.5, zoomRef.current - 0.1);
+        zoomRef.current = Math.max(ZOOM_MIN, zoomRef.current - 0.1);
         updateCameraZoom();
     };
 
     const handleZoomOut = () => {
-        zoomRef.current = Math.min(5, zoomRef.current + 0.1);
+        zoomRef.current = Math.min(ZOOM_MAX, zoomRef.current + 0.1);
         updateCameraZoom();
     };
 
+    // Inicializ el contexto 3D, la camara y la escena y todo
     const onContextCreate = async (gl: ExpoWebGLRenderingContext) => {
         const scene = new THREE.Scene();
 
@@ -72,7 +80,7 @@ export default function RenderProperty() {
         const renderer = new Renderer({ gl });
         renderer.setSize(gl.drawingBufferWidth, gl.drawingBufferHeight);
 
-        // Luces
+        // Luces de la escena
         const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
         scene.add(ambientLight);
 
@@ -89,24 +97,19 @@ export default function RenderProperty() {
                 asset.localUri || '',
                 (gltf) => {
                     const model = gltf.scene;
-                    modelRef.current = model;
-                    // Crear un grupo contenedor
                     const pivot = new THREE.Group();
                     pivot.add(model);
                     scene.add(pivot);
                     modelRef.current = pivot;
 
-                    // Centrar el modelo dentro del grupo
+                    // Centrar modelo
                     const box = new THREE.Box3().setFromObject(model);
                     const center = box.getCenter(new THREE.Vector3());
                     model.position.sub(center);
                     model.rotation.y = Math.PI / 6;
-                    model.rotation.x = Math.PI / 18; // 10°
+                    model.rotation.x = Math.PI / 18;
 
-
-
-
-                    // Calcular distancia base y configurar cámara
+                    // Configurar cámara
                     const size = box.getSize(new THREE.Vector3());
                     const baseDistance = Math.max(size.x, size.y, size.z);
                     baseDistanceRef.current = baseDistance;
@@ -126,12 +129,12 @@ export default function RenderProperty() {
                 },
                 undefined,
                 (error) => {
-                    console.error('Error loading GLB:', error);
+                    console.error('Error cargando GLB:', error);
                     setIsLoading(false);
                 }
             );
         } catch (err) {
-            console.error('Error loading asset:', err);
+            console.error('Error cargando asset:', err);
             setIsLoading(false);
         }
     };
@@ -143,7 +146,10 @@ export default function RenderProperty() {
                     <ActivityIndicator size="large" color="#6200ee" />
                 </View>
             )}
+
             <BackButton />
+
+            {/* Vista 3D */}
             <GLView style={styles.glView} onContextCreate={onContextCreate} />
 
             {/* Controles de zoom */}
@@ -159,7 +165,6 @@ export default function RenderProperty() {
     );
 }
 
-// Estilos
 const styles = StyleSheet.create({
     container: {
         flex: 1,

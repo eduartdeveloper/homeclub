@@ -6,9 +6,8 @@ import {
     Image,
     StyleSheet,
     ActivityIndicator,
-    TouchableOpacity,
 } from "react-native";
-import { Card, Text, Button } from "react-native-paper";
+import { Card, Text } from "react-native-paper";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import BackButton from "@/components/BackButton";
 
@@ -19,22 +18,26 @@ interface Reservation {
     image: string;
     price: string;
     duration: string;
+    status: string;
 }
 
-export default function ReservationDetail() {
+export default function ReservationDetail(): JSX.Element {
     const { id } = useLocalSearchParams<{ id: string }>();
+
     const [reservation, setReservation] = useState<Reservation | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
 
     useEffect(() => {
         const fetchReservation = async () => {
             try {
-                const response = await fetch("https://run.mocky.io/v3/a75e7a9a-23b6-41e6-b80b-93fc3b501d90");
+                const response = await fetch(
+                    "https://run.mocky.io/v3/a75e7a9a-23b6-41e6-b80b-93fc3b501d90"
+                );
                 const data: Reservation[] = await response.json();
                 const selected = data.find((item) => item.id === id);
                 setReservation(selected || null);
             } catch (error) {
-                console.error("Error fetching reservation:", error);
+                console.error("Error al obtener la reserva:", error);
             } finally {
                 setLoading(false);
             }
@@ -46,12 +49,11 @@ export default function ReservationDetail() {
     if (loading) {
         return (
             <View style={styles.loadingContainer}>
-                <ActivityIndicator size="large" />
+                <ActivityIndicator size="large" color="#000" />
                 <Text>Cargando reserva...</Text>
             </View>
         );
     }
-
     if (!reservation) {
         return (
             <View style={styles.loadingContainer}>
@@ -61,9 +63,10 @@ export default function ReservationDetail() {
     }
 
     return (
-        <View style={styles.screen}> 
+        <View style={styles.screen}>
             <ScrollView contentContainerStyle={styles.container}>
                 <BackButton />
+
                 <Card style={styles.card}>
                     <Image source={{ uri: reservation.image }} style={styles.image} />
                     <Card.Content>
@@ -71,28 +74,22 @@ export default function ReservationDetail() {
                             {reservation.title}
                         </Text>
 
-                        <View style={styles.infoRow}>
-                            <MaterialCommunityIcons name="map-marker" size={15} color="black" />
-                            <Text style={styles.infoText}>{reservation.location}</Text>
-                        </View>
-
-                        <View style={styles.infoRow}>
-                            <MaterialCommunityIcons name="cash" size={15} color="black" />
-                            <Text style={styles.infoText}>${reservation.price}</Text>
-                        </View>
-
-                        <View style={styles.infoRow}>
-                            <MaterialCommunityIcons name="watch" size={15} color="black" />
-                            <Text style={styles.infoText}>{reservation.duration} dias</Text>
-                        </View>
-
-                        <View style={styles.infoRow}>
-                            <MaterialCommunityIcons name="check" size={15} color="black" />
-                            <Text style={styles.infoText}>{reservation.status}</Text>
-                        </View>
+                        <InfoRow icon="map-marker" text={reservation.location} />
+                        <InfoRow icon="cash" text={`$${reservation.price}`} />
+                        <InfoRow icon="watch" text={`${reservation.duration} días`} />
+                        <InfoRow icon="check" text={`Estado: ${reservation.status}`} />
                     </Card.Content>
                 </Card>
-            </ScrollView>           
+            </ScrollView>
+        </View>
+    );
+}
+
+function InfoRow({ icon, text }: { icon: string; text: string }) {
+    return (
+        <View style={styles.infoRow}>
+            <MaterialCommunityIcons name={icon} size={18} color="black" />
+            <Text style={styles.infoText}>{text}</Text>
         </View>
     );
 }
@@ -109,20 +106,19 @@ const styles = StyleSheet.create({
         borderRadius: 16,
         overflow: "hidden",
         elevation: 4,
-        backgroundColor: 'white',
-        
+        backgroundColor: "white",
     },
     image: {
         width: "100%",
         height: 220,
         borderBottomLeftRadius: 50,
-        borderBottomRightRadius: 50
+        borderBottomRightRadius: 50,
     },
     title: {
         marginTop: 12,
-        fontWeight: 800,
-        color: 'black',
-        fontSize: 20
+        fontWeight: "800",
+        color: "black",
+        fontSize: 20,
     },
     infoRow: {
         flexDirection: "row",
@@ -133,18 +129,6 @@ const styles = StyleSheet.create({
         marginLeft: 8,
         fontSize: 16,
         color: "#000",
-    },
-    footer: {
-        flexDirection: "row",
-        justifyContent: "space-around",
-        padding: 16,
-        borderTopWidth: 1,
-        borderColor: "#ddd",
-        backgroundColor: "#fff",
-    },
-    footerButton: {
-        flex: 1,
-        marginHorizontal: 6,
     },
     loadingContainer: {
         flex: 1,

@@ -1,36 +1,55 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, FlatList, Image, TextInput, TouchableOpacity, StyleSheet, ScrollView } from "react-native";
+import { View, Text, FlatList, Image, TextInput, TouchableOpacity, StyleSheet, ScrollView} from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useSelector } from "react-redux";
 
+interface User {
+    name: string;
+    username: string;
+}
+
+interface Property {
+    id: number;
+    title: string;
+    location: string;
+    city: string;
+    price: number;
+    bedrooms: number;
+    bathrooms: number;
+    size: number;
+    image: string;
+}
+
+
 export default function PropertiesScreen() {
     const router = useRouter();
-    const user = useSelector(state => state.auth.user);
+    const user: User = useSelector((state: any) => state.auth.user);
+
     const profileImage = user.username === "jose"
         ? require('../../assets/images/men.png')
         : require('../../assets/images/women.png');
 
-    const [allProperties, setAllProperties] = useState([]);
-    const [filteredProperties, setFilteredProperties] = useState([]);
-    const [cities, setCities] = useState([]);
+    const [allProperties, setAllProperties] = useState<Property[]>([]);
+    const [filteredProperties, setFilteredProperties] = useState<Property[]>([]);
+    const [cities, setCities] = useState<string[]>([]);
     const [selectedCity, setSelectedCity] = useState("Todas");
     const [searchText, setSearchText] = useState("");
 
-
+    // Obtener propiedades desde la API
     useEffect(() => {
         fetch("https://run.mocky.io/v3/60d668c2-70e8-4597-ac4c-d881dd9aaaad")
             .then(res => res.json())
-            .then(data => {
+            .then((data: Property[]) => {
                 setAllProperties(data);
                 setFilteredProperties(data);
-                // Extraer ciudades únicas
                 const uniqueCities = ["Todas", ...new Set(data.map(item => item.city))];
                 setCities(uniqueCities);
             });
     }, []);
 
-    const filterByCity = (city) => {
+    // Filtrar por ciudad seleccionada
+    const filterByCity = (city: string) => {
         setSelectedCity(city);
         const filtered = allProperties.filter(item => {
             const matchCity = city === "Todas" || item.city === city;
@@ -41,7 +60,8 @@ export default function PropertiesScreen() {
         setFilteredProperties(filtered);
     };
 
-    const handleSearch = (text) => {
+    // Manejar búsqueda por texto
+    const handleSearch = (text: string) => {
         setSearchText(text);
         const filtered = allProperties.filter(item => {
             const matchCity = selectedCity === "Todas" || item.city === selectedCity;
@@ -52,26 +72,27 @@ export default function PropertiesScreen() {
         setFilteredProperties(filtered);
     };
 
-    const formatCOP = (value) => {
-        return new Intl.NumberFormat('es-CO').format(value);
-    };
-
+    const formatCOP = (value: number): string =>
+        new Intl.NumberFormat("es-CO").format(value);
 
     return (
         <View style={styles.container}>
-            {/* Header */}
             <View style={styles.header}>
                 <Text style={styles.username}>{user.name}</Text>
                 <Image source={profileImage} style={styles.profileImage} />
             </View>
 
-            {/* Search Bar */}
+            {/* Barra de búsqueda */}
             <View style={styles.searchBar}>
                 <MaterialCommunityIcons name="magnify" size={24} color="gray" />
-                <TextInput placeholder="Buscar..." style={styles.searchInput} onChangeText={handleSearch} />
+                <TextInput
+                    placeholder="Buscar..."
+                    style={styles.searchInput}
+                    onChangeText={handleSearch}
+                />
             </View>
 
-            {/* City Filters */}
+            {/* Filtro de ciudades */}
             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filters}>
                 {cities.map(city => (
                     <TouchableOpacity
@@ -79,19 +100,22 @@ export default function PropertiesScreen() {
                         style={city === selectedCity ? styles.activeFilter : styles.filter}
                         onPress={() => filterByCity(city)}
                     >
-                        <Text style={city === selectedCity ? styles.activeFilterText : null}>
+                        <Text style={city === selectedCity ? styles.activeFilterText : undefined}>
                             {city}
                         </Text>
                     </TouchableOpacity>
                 ))}
             </ScrollView>
 
-            {/* Property List */}
+            {/* Lista de propiedades */}
             <FlatList
                 data={filteredProperties}
                 keyExtractor={(item) => item.id.toString()}
                 renderItem={({ item }) => (
-                    <TouchableOpacity style={styles.card} onPress={() => router.push(`/property/${item.id}`)}>
+                    <TouchableOpacity
+                        style={styles.card}
+                        onPress={() => router.push(`/property/${item.id}`)}
+                    >
                         <Image source={{ uri: item.image }} style={styles.propertyImage} />
                         <View style={styles.backgoundfloatingButton}></View>
                         <View style={styles.backgoundfloatingButtonc1}></View>
@@ -100,15 +124,17 @@ export default function PropertiesScreen() {
                             <MaterialCommunityIcons name="arrow-top-right" size={24} color="white" />
                         </View>
                         <View style={styles.cardContent}>
-                            <Text style={styles.price}>${formatCOP(item.price)}<Text style={{fontSize: 12}}>/ mes</Text></Text>
+                            <Text style={styles.price}>
+                                ${formatCOP(item.price)}<Text style={{ fontSize: 12 }}>/ mes</Text>
+                            </Text>
                             <Text style={styles.propertyTitle}>{item.title}</Text>
                             <Text style={styles.propertyLocation}>{item.location}</Text>
                             <View style={styles.propertyDetails}>
-                                <MaterialCommunityIcons name="bed-outline" size={15} color="white" style={styles.detailIcon} />
+                                <MaterialCommunityIcons name="bed-outline" size={15} color="white" />
                                 <Text style={styles.detailText}>{item.bedrooms}</Text>
-                                <MaterialCommunityIcons name="shower" size={15} color="white" style={styles.detailIcon} />
+                                <MaterialCommunityIcons name="shower" size={15} color="white" />
                                 <Text style={styles.detailText}>{item.bathrooms}</Text>
-                                <MaterialCommunityIcons name="ruler" size={15} color="white" style={styles.detailIcon} />
+                                <MaterialCommunityIcons name="ruler" size={15} color="white" />
                                 <Text style={styles.detailText}>{item.size}</Text>
                             </View>
                         </View>
@@ -124,7 +150,7 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: "#F8F9FA",
         padding: 16,
-        paddingTop: 50
+        paddingTop: 50,
     },
     header: {
         flexDirection: "row",
@@ -162,7 +188,7 @@ const styles = StyleSheet.create({
         padding: 10,
         borderRadius: 20,
         marginRight: 8,
-        height: 40
+        height: 40,
     },
     activeFilterText: {
         color: "white",
@@ -172,7 +198,7 @@ const styles = StyleSheet.create({
         padding: 10,
         borderRadius: 20,
         marginRight: 8,
-        height: 40
+        height: 40,
     },
     card: {
         marginTop: 20,
@@ -181,12 +207,11 @@ const styles = StyleSheet.create({
         width: "100%",
         aspectRatio: 1,
         position: "relative",
-        elevation: 0,
     },
     propertyImage: {
         height: "100%",
         width: "100%",
-        objectFit: "cover"
+        resizeMode: "cover",
     },
     floatingButton: {
         position: "absolute",
@@ -197,8 +222,8 @@ const styles = StyleSheet.create({
         borderRadius: 50,
         width: 75,
         height: 75,
-        alignItems: 'center',
-        justifyContent: 'center'
+        alignItems: "center",
+        justifyContent: "center",
     },
     cardContent: {
         padding: 16,
@@ -209,11 +234,19 @@ const styles = StyleSheet.create({
         left: "5%",
         borderRadius: 25,
     },
+    price: {
+        fontSize: 18,
+        fontWeight: "bold",
+        color: "white",
+        position: "absolute",
+        top: 16,
+        right: 16,
+    },
     propertyTitle: {
         fontSize: 18,
         fontWeight: "bold",
         color: "white",
-        width: '60%'
+        width: "60%",
     },
     propertyLocation: {
         color: "white",
@@ -227,20 +260,7 @@ const styles = StyleSheet.create({
     detailText: {
         marginLeft: 4,
         marginRight: 15,
-        color: "white"
-    },
-    detailIcon: {
-        backgroundColor: 'rgba(255,255,255,0.s)',
-        padding: 5,
-        borderRadius: 20
-    },
-    price: {
-        fontSize: 18,
-        fontWeight: "bold",
         color: "white",
-        position: "absolute",
-        top: 16,
-        right: 16
     },
     backgoundfloatingButton: {
         position: "absolute",

@@ -1,16 +1,37 @@
 import React, { useState } from 'react';
 import { View, StyleSheet, Pressable } from 'react-native';
-import { Text, TextInput, Button } from 'react-native-paper';
+import { Text, TextInput } from 'react-native-paper';
 import { DatePickerModal, TimePickerModal } from 'react-native-paper-dates';
 import { format } from 'date-fns';
 
-export default function Step2({ range, changeRange, reservaInfo, setReservaInfo }) {
-    
+
+interface DateRange {
+    startDate: Date | undefined;
+    endDate: Date | undefined;
+}
+
+interface ReservaInfo {
+    cantidadPersonas: string;
+    horaCheckIn: Date | null;
+}
+
+interface Step2Props {
+    range: DateRange;
+    changeRange: (range: DateRange) => void;
+    reservaInfo: ReservaInfo;
+    setReservaInfo: (info: ReservaInfo) => void;
+}
+
+export default function Step2({
+    range,
+    changeRange,
+    reservaInfo,
+    setReservaInfo,
+}: Step2Props) {
     const [openDate, setOpenDate] = useState(false);
     const [openTime, setOpenTime] = useState(false);
-    
 
-    const onConfirmRange = (params) => {
+    const onConfirmRange = (params: { startDate: Date; endDate: Date }) => {
         setOpenDate(false);
         changeRange({
             startDate: params.startDate,
@@ -18,21 +39,31 @@ export default function Step2({ range, changeRange, reservaInfo, setReservaInfo 
         });
     };
 
+    const onConfirmTime = ({ hours, minutes }: { hours: number; minutes: number }) => {
+        const selectedTime = new Date();
+        selectedTime.setHours(hours);
+        selectedTime.setMinutes(minutes);
+        setReservaInfo({ ...reservaInfo, horaCheckIn: selectedTime });
+        setOpenTime(false);
+    };
+
     return (
         <View style={styles.container}>
             <Text variant="titleMedium">Paso 2</Text>
-            <Text style={styles.texto}>Fechas, número de personas, peticiones especiales...</Text>
 
+            {/* Cantidad de personas */}
             <TextInput
                 label="Cantidad de personas"
                 value={reservaInfo.cantidadPersonas}
-                onChangeText={ (text) => setReservaInfo({...reservaInfo,cantidadPersonas : text})}
+                onChangeText={(text) =>
+                    setReservaInfo({ ...reservaInfo, cantidadPersonas: text })
+                }
                 keyboardType="numeric"
                 style={styles.input}
                 mode="outlined"
             />
 
-            {/* Selector de Fechas */}
+            {/* Selector de fechas (abre modal) */}
             <Pressable onPress={() => setOpenDate(true)}>
                 <TextInput
                     label="Fechas de reserva"
@@ -58,11 +89,13 @@ export default function Step2({ range, changeRange, reservaInfo, setReservaInfo 
                 onConfirm={onConfirmRange}
             />
 
-            {/* Selector de Hora */}
+            {/* Selector de hora (abre modal) */}
             <Pressable onPress={() => setOpenTime(true)}>
                 <TextInput
                     label="Hora de check-in"
-                    value={reservaInfo.horaCheckIn ? format(reservaInfo.horaCheckIn, 'HH:mm') : ''}
+                    value={
+                        reservaInfo.horaCheckIn ? format(reservaInfo.horaCheckIn, 'HH:mm') : ''
+                    }
                     editable={false}
                     style={styles.input}
                     mode="outlined"
@@ -73,13 +106,7 @@ export default function Step2({ range, changeRange, reservaInfo, setReservaInfo 
             <TimePickerModal
                 visible={openTime}
                 onDismiss={() => setOpenTime(false)}
-                onConfirm={({ hours, minutes }) => {
-                    const selectedTime = new Date();
-                    selectedTime.setHours(hours);
-                    selectedTime.setMinutes(minutes);
-                    setReservaInfo({ ...reservaInfo, horaCheckIn: selectedTime });
-                    setOpenTime(false);
-                }}
+                onConfirm={onConfirmTime}
                 hours={reservaInfo.horaCheckIn?.getHours()}
                 minutes={reservaInfo.horaCheckIn?.getMinutes()}
                 locale="es"
@@ -93,10 +120,6 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         padding: 20,
-    },
-    texto: {
-        marginTop: 10,
-        color: '#444',
     },
     input: {
         marginTop: 20,

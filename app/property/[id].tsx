@@ -6,95 +6,97 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import MapView, { Marker } from 'react-native-maps';
 import BackButton from '@/components/BackButton';
 
+interface Property {
+    id: string;
+    title: string;
+    image: string;
+    bedrooms: number;
+    bathrooms: number;
+    size: string;
+    location: string;
+    latitud: number;
+    longitud: number;
+    descripcion: string;
+    price: number;
+}
+
 export default function PropertyDetail() {
     const { id } = useLocalSearchParams();
     const { colors } = useTheme();
     const router = useRouter();
 
-    const [property, setProperty] = useState(null);
+    const [property, setProperty] = useState<Property | null>(null);
     const [loading, setLoading] = useState(true);
 
+
     useEffect(() => {
-        fetch('https://run.mocky.io/v3/60d668c2-70e8-4597-ac4c-d881dd9aaaad')
-            .then(res => res.json())
-            .then(data => {
+        const loadProperty = async () => {
+            try {
+                const res = await fetch('https://run.mocky.io/v3/60d668c2-70e8-4597-ac4c-d881dd9aaaad');
+                const data: Property[] = await res.json();
                 const selected = data.find(item => item.id === id);
-                setProperty(selected);
-                setLoading(false);
-            })
-            .catch(err => {
+                setProperty(selected || null);
+            } catch (err) {
                 console.error('Error loading property:', err);
+            } finally {
                 setLoading(false);
-            });
+            }
+        };
+        loadProperty();
     }, [id]);
+
 
     if (loading || !property) {
         return (
-            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+            <View style={styles.centered}>
                 <ActivityIndicator size="large" />
                 <Text>Cargando propiedad...</Text>
             </View>
         );
     }
-
     const openGoogleMapsRoute = () => {
-        const destinationLat = property.latitud;
-        const destinationLng = property.longitud;
-
+        const { latitud, longitud } = property;
         const url = Platform.select({
-            ios: `http://maps.apple.com/?daddr=${destinationLat},${destinationLng}`,
-            android: `https://www.google.com/maps/dir/?api=1&destination=${destinationLat},${destinationLng}`
+            ios: `http://maps.apple.com/?daddr=${latitud},${longitud}`,
+            android: `https://www.google.com/maps/dir/?api=1&destination=${latitud},${longitud}`,
         });
+        Linking.openURL(url!);
+    };
 
-        Linking.openURL(url);
-    };
-    const formatCOP = (value) => {
-        return new Intl.NumberFormat('es-CO').format(value);
-    };
+    const formatCOP = (value: number) =>
+        new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(value);
+
     return (
-        <View style={{ flex: 1, backgroundColor: 'white' }}>
+        <View style={styles.container}>
             <BackButton />
-            <ScrollView contentContainerStyle={{ paddingBottom: 140 }}>
-                {/* 📸 Banner */}
+            <ScrollView contentContainerStyle={styles.scrollContainer}>
                 <View style={styles.bannerContainer}>
-                    <Image source={{ uri: property.image }} style={styles.banner} resizeMode='cover' />
+                    <Image source={{ uri: property.image }} style={styles.banner} resizeMode="cover" />
                 </View>
 
-                {/* 🏠 Info */}
                 <View style={styles.infoContainer}>
-                    <Text variant="titleLarge" style={styles.title}>
-                        {property.title}
-                    </Text>
+                    <Text variant="titleLarge" style={styles.title}>{property.title}</Text>
 
-                    <View style={styles.infoRow}>
-                        <MaterialCommunityIcons name="bed-outline" size={15} color="black" style={styles.detailIcon} />
-                        <Text style={styles.infoText}>{property.bedrooms} Habitaciones</Text>
-                    </View>
-                    <View style={styles.infoRow}>
-                        <MaterialCommunityIcons name="shower" size={15} color="black" style={styles.detailIcon} />
-                        <Text style={styles.infoText}>{property.bathrooms} Baños</Text>
-                    </View>
-                    <View style={styles.infoRow}>
-                        <MaterialCommunityIcons name="ruler" size={15} color="black" style={styles.detailIcon} />
-                        <Text style={styles.infoText}>{property.size}</Text>
-                    </View>
-                    <View style={styles.infoRow}>
-                        <MaterialCommunityIcons name="map-marker" size={15} color="black" style={styles.detailIcon} />
-                        <Text style={styles.infoText}>{property.location}</Text>
-                    </View>
-                    <View style={styles.infoRow}>
-                        <MaterialCommunityIcons name="cash" size={15} color="black" style={styles.detailIcon} />
-                        <Text style={styles.infoText}>${formatCOP(property.price)}<Text style={{fontSize: 12}}>/ mes</Text></Text>
-                    </View>
+                    {[
+                        { icon: "bed-outline", label: `${property.bedrooms} Habitaciones` },
+                        { icon: "shower", label: `${property.bathrooms} Baños` },
+                        { icon: "ruler", label: property.size },
+                        { icon: "map-marker", label: property.location },
+                        { icon: "cash", label: `${formatCOP(property.price)} / mes` }
+                    ].map(({ icon, label }, i) => (
+                        <View key={i} style={styles.infoRow}>
+                            <MaterialCommunityIcons name={icon as any} size={15} color="black" style={styles.detailIcon} />
+                            <Text style={styles.infoText}>{label}</Text>
+                        </View>
+                    ))}
 
                     <Text style={styles.titleDescription}>Descripción</Text>
                     <Text>{property.descripcion}</Text>
                 </View>
 
-
-                {/* 🗺️ Mapa */}
+                {/* Maapa */}
                 <Card style={styles.card}>
-                    <Card.Title title="Descubre tu nuevo hogar" titleStyle={{ fontSize: 20, fontWeight: 'bold', color: '#333' }} />
+                    <Card.Title title="Descubre tu nuevo hogar" titleStyle={styles.cardTitle} />
                     <Card.Content>
                         <MapView
                             style={styles.realMap}
@@ -112,16 +114,17 @@ export default function PropertyDetail() {
                                 description={property.location}
                             />
                         </MapView>
-                        <Text style={{ paddingVertical: 15 }}>Planifica el camino hacia tu nuevo hogar con solo un clic</Text>
+                        <Text style={{ paddingVertical: 15 }}>
+                            Planifica el camino hacia tu nuevo hogar con solo un clic
+                        </Text>
                         <Button mode="contained" onPress={openGoogleMapsRoute} style={styles.button}>
                             Calcular ruta en Google Maps
                         </Button>
                     </Card.Content>
                 </Card>
 
-                {/* 🧊 Render 3D (opcional o estático) */}
+                {/* Render 3D */}
                 <Card style={styles.card}>
-
                     <Card.Content>
                         <Text style={styles.renderTitle}>Visualiza tu futuro hogar en 3D</Text>
                         <Image
@@ -132,14 +135,15 @@ export default function PropertyDetail() {
                         <Text style={styles.renderText}>
                             Vive la experiencia virtual como si ya estuvieras allí.
                         </Text>
-                        <Button mode="contained" onPress={() => router.push('/property/render')} style={[styles.button, { width: '50%' }]}>
+                        <Button
+                            mode="contained"
+                            onPress={() => router.push('/property/render')}
+                            style={[styles.button, { width: '50%' }]}
+                        >
                             Ver render 3D
                         </Button>
                     </Card.Content>
                 </Card>
-
-
-
             </ScrollView>
             <View style={styles.fixedBottomContainer}>
                 <Button
@@ -164,6 +168,18 @@ export default function PropertyDetail() {
 }
 
 const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        backgroundColor: 'white'
+    },
+    scrollContainer: {
+        paddingBottom: 140,
+    },
+    centered: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center'
+    },
     bannerContainer: {
         backgroundColor: 'white'
     },
@@ -183,7 +199,7 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         color: '#000',
         fontSize: 23,
-        fontWeight: '800',
+        fontWeight: '800'
     },
     infoContainer: {
         padding: 16,
@@ -197,6 +213,9 @@ const styles = StyleSheet.create({
     infoText: {
         marginLeft: 8,
     },
+    detailIcon: {
+        marginRight: 4,
+    },
     card: {
         margin: 12,
         paddingHorizontal: 10,
@@ -207,9 +226,14 @@ const styles = StyleSheet.create({
         height: 200,
         borderRadius: 12,
     },
+    cardTitle: {
+        fontSize: 20,
+        fontWeight: 'bold',
+        color: '#333'
+    },
     renderTitle: {
         fontSize: 20,
-        fontWeight: 800
+        fontWeight: '800'
     },
     renderText: {
         width: '60%',
@@ -222,13 +246,9 @@ const styles = StyleSheet.create({
         top: 30,
         right: 0
     },
-    cartTitle: {
-        fontWeight: 800,
-        fontSize: 20
-    },
     titleDescription: {
         fontSize: 20,
-        fontWeight: 800,
+        fontWeight: '800',
         marginTop: 25
     },
     fixedBottomContainer: {
@@ -256,5 +276,4 @@ const styles = StyleSheet.create({
         marginHorizontal: 6,
         borderRadius: 10,
     }
-
 });
